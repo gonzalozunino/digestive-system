@@ -14,3 +14,9 @@ Salta obstáculos al ritmo de la música, junta los jugos digestivos de cada ór
 - Los récords se guardan en el navegador del dispositivo.
 
 Las preguntas están en el objeto `QUESTIONS` dentro de `index.html` (la primera opción de cada pregunta es la correcta; se mezclan al jugar).
+
+## Preguntas
+
+Basadas en los temas a evaluar: función del sistema digestivo; ingestión y digestión; órganos, glándulas y partes con su función; y el recorrido del alimento.
+En cada partida salen 15 preguntas (3 por órgano) elegidas al azar: una general, una sobre los órganos y glándulas de ese tramo y una propia del órgano.
+Las preguntas sobre funciones y recorrido se arman con respuestas mezcladas distintas cada vez, y el juego recuerda cuáles ya salieron para no repetirlas.

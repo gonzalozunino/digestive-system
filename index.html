@@ -89,8 +89,8 @@ p{margin:0;line-height:1.35}
 .ans b{flex:none;width:1.7em;height:1.7em;border-radius:.5em;background:rgba(27,15,46,.85);color:var(--paper);display:grid;place-items:center;font-size:.9em}
 .ans:disabled{cursor:default}
 .ans.dim{filter:grayscale(.8) brightness(.6)}
-.ans.right{--c:var(--ok);--d:#1d8a4f;animation:pulse .5s}
-.ans.wrong{--c:var(--bad);--d:#a1222f;animation:shake .4s}
+.ans.right{background:var(--ok)!important;box-shadow:0 .25em 0 #1d8a4f!important;animation:pulse .5s}
+.ans.wrong{background:var(--bad)!important;box-shadow:0 .25em 0 #a1222f!important;animation:shake .4s}
 @keyframes pulse{50%{transform:scale(1.05)}}
 @keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 #feedback{margin-top:.8em;display:grid;grid-template-columns:1fr auto;gap:.8em;align-items:center;background:#2d1a4a;border-radius:.9em;padding:.6em .9em}
@@ -275,27 +275,27 @@ const LEVELS = [
 const QUESTIONS = {
   boca: [
     {q:"¿Dónde comienza la digestión?", a:["En la boca","En el estómago","En el intestino delgado","En el esófago"], e:"En la boca los dientes trituran la comida y la saliva empieza a digerirla."},
-    {q:"¿Qué líquido se produce en la boca y ablanda la comida?", a:["La saliva","La bilis","El jugo gástrico","La sangre"], e:"Las glándulas salivales fabrican saliva: ¡más de un litro al día!"},
+    {g:"salivales", q:"¿Qué líquido se produce en la boca y ablanda la comida?", a:["La saliva","La bilis","El jugo gástrico","La sangre"], e:"Las glándulas salivales fabrican saliva: ¡más de un litro al día!"},
     {q:"¿Cómo se llama la mezcla de comida y saliva que tragamos?", a:["Bolo alimenticio","Quimo","Quilo","Heces"], e:"Se llama bolo alimenticio. ¡Por eso nuestro héroe se llama Bolo!"},
     {q:"¿Qué dientes usamos para cortar los alimentos?", a:["Los incisivos","Los molares","Los premolares","Las encías"], e:"Los incisivos son los dientes de adelante, planos y afilados como tijeras."},
     {q:"¿Qué dientes trituran y muelen la comida?", a:["Los molares","Los incisivos","Los caninos","La lengua"], e:"Los molares están al fondo y son anchos, perfectos para moler."},
-    {q:"¿Qué parte de la boca mueve la comida y nos deja sentir los sabores?", a:["La lengua","El paladar","Los labios","La úvula"], e:"La lengua es un músculo con papilas gustativas que detectan los sabores."},
+    {g:"lengua", q:"¿Qué parte de la boca mueve la comida y nos deja sentir los sabores?", a:["La lengua","El paladar","Los labios","La úvula"], e:"La lengua es un músculo con papilas gustativas que detectan los sabores."},
     {q:"¿Cuántos dientes tiene normalmente una persona adulta?", a:["32","20","12","50"], e:"Los adultos tienen 32 dientes. Los niños tienen 20 dientes de leche."},
     {q:"La saliva empieza a digerir un tipo de alimento. ¿Cuál?", a:["Los almidones, como el pan o el arroz","Las grasas","Las vitaminas","El agua"], e:"La saliva tiene una enzima llamada amilasa que empieza a romper los almidones."},
   ],
   esofago: [
-    {q:"¿Qué tubo lleva la comida de la boca al estómago?", a:["El esófago","La tráquea","El intestino grueso","La vena"], e:"El esófago es un tubo muscular. La tráquea lleva el aire a los pulmones."},
-    {q:"¿Cómo se llaman los movimientos que empujan la comida por el esófago?", a:["Movimientos peristálticos","Latidos","Respiración","Masticación"], e:"Son contracciones en forma de ola que empujan el bolo hacia abajo."},
-    {q:"¿Qué \"tapita\" evita que la comida se vaya a los pulmones al tragar?", a:["La epiglotis","La úvula","Las amígdalas","El diafragma"], e:"La epiglotis tapa la tráquea cuando tragamos. Si falla, ¡tosemos!"},
+    {g:"esofago", q:"¿Qué tubo lleva la comida de la boca al estómago?", a:["El esófago","La tráquea","El intestino grueso","La vena"], e:"El esófago es un tubo muscular. La tráquea lleva el aire a los pulmones."},
+    {g:"esofago", q:"¿Cómo se llaman los movimientos que empujan la comida por el esófago?", a:["Movimientos peristálticos","Latidos","Respiración","Masticación"], e:"Son contracciones en forma de ola que empujan el bolo hacia abajo."},
+    {g:"epiglotis", q:"¿Qué \"tapita\" evita que la comida se vaya a los pulmones al tragar?", a:["La epiglotis","La úvula","Las amígdalas","El diafragma"], e:"La epiglotis tapa la tráquea cuando tragamos. Si falla, ¡tosemos!"},
     {q:"¿Podrías tragar comida estando de cabeza?", a:["Sí, los músculos del esófago la empujan","No, la gravedad lo impide","Solo los líquidos","Solo si masticas mucho"], e:"¡Sí! Por eso los astronautas pueden comer en el espacio sin gravedad."},
     {q:"¿Cuánto mide más o menos el esófago de un adulto?", a:["Unos 25 cm","Unos 2 cm","Unos 2 metros","Unos 10 metros"], e:"Mide unos 25 centímetros, más o menos lo que una regla escolar larga."},
-    {q:"Al tragar, ¿por dónde pasa la comida justo antes del esófago?", a:["Por la faringe","Por el estómago","Por el hígado","Por el páncreas"], e:"La faringe (la garganta) es un cruce compartido entre la comida y el aire."},
+    {g:"faringe", q:"Al tragar, ¿por dónde pasa la comida justo antes del esófago?", a:["Por la faringe","Por el estómago","Por el hígado","Por el páncreas"], e:"La faringe (la garganta) es un cruce compartido entre la comida y el aire."},
     {q:"¿Cuánto tarda la comida en bajar por el esófago?", a:["Unos pocos segundos","Una hora","Un día","Una semana"], e:"Solo tarda unos 5 a 10 segundos en llegar al estómago."},
     {q:"¿Qué hay al final del esófago para que la comida no vuelva a subir?", a:["Un anillo de músculo (cardias)","Un diente","Un hueso","Una vellosidad"], e:"El cardias es un anillo muscular que se abre para dejar pasar la comida y luego se cierra."},
   ],
   estomago: [
-    {q:"¿Qué jugo produce el estómago para digerir?", a:["Jugo gástrico","Saliva","Bilis","Jugo de naranja"], e:"El jugo gástrico contiene ácido y enzimas que deshacen la comida."},
-    {q:"¿Cómo se llama la papilla que se forma en el estómago?", a:["Quimo","Bolo","Quilo","Heces"], e:"El bolo se mezcla con el jugo gástrico y se convierte en quimo."},
+    {g:"estomago", q:"¿Qué jugo produce el estómago para digerir?", a:["Jugo gástrico","Saliva","Bilis","Jugo de naranja"], e:"El jugo gástrico contiene ácido y enzimas que deshacen la comida."},
+    {g:"estomago", q:"¿Cómo se llama la papilla que se forma en el estómago?", a:["Quimo","Bolo","Quilo","Heces"], e:"El bolo se mezcla con el jugo gástrico y se convierte en quimo."},
     {q:"El jugo gástrico tiene un ácido muy fuerte. ¿Cuál es?", a:["Ácido clorhídrico","Ácido cítrico","Vinagre","Ácido de batería"], e:"El ácido clorhídrico también mata muchos microbios que vienen con la comida."},
     {q:"¿Por qué el estómago no se digiere a sí mismo?", a:["Lo protege una capa de moco","Está hecho de metal","No tiene ácido","Porque siempre está vacío"], e:"Una capa de moco cubre sus paredes y lo protege del ácido."},
     {q:"¿Qué forma tiene el estómago?", a:["De bolsa, parecida a una letra J","De tubo recto","De estrella","Cuadrada"], e:"Es una bolsa elástica en forma de J que se estira cuando comemos."},
@@ -304,27 +304,120 @@ const QUESTIONS = {
     {q:"¿Qué válvula separa el estómago del intestino delgado?", a:["El píloro","El cardias","La epiglotis","La úvula"], e:"El píloro deja pasar el quimo poco a poco hacia el intestino delgado."},
   ],
   delgado: [
-    {q:"¿En qué órgano se absorben la mayoría de los nutrientes?", a:["En el intestino delgado","En el estómago","En la boca","En el esófago"], e:"En el intestino delgado los nutrientes pasan a la sangre."},
+    {g:"delgado", q:"¿En qué órgano se absorben la mayoría de los nutrientes?", a:["En el intestino delgado","En el estómago","En la boca","En el esófago"], e:"En el intestino delgado los nutrientes pasan a la sangre."},
     {q:"¿Cuánto mide aproximadamente el intestino delgado de un adulto?", a:["Unos 6 o 7 metros","Unos 50 cm","Unos 100 metros","Unos 20 cm"], e:"¡Mide unos 6 o 7 metros! Está todo enrollado dentro de la barriga."},
     {q:"¿Cómo se llaman los \"deditos\" del intestino delgado que absorben nutrientes?", a:["Vellosidades intestinales","Papilas gustativas","Alvéolos","Neuronas"], e:"Millones de vellosidades aumentan la superficie para absorber más nutrientes."},
-    {q:"¿Qué órgano fabrica la bilis, que ayuda a digerir las grasas?", a:["El hígado","El páncreas","El riñón","El corazón"], e:"El hígado fabrica la bilis. Es la glándula más grande del cuerpo."},
-    {q:"¿Dónde se guarda la bilis hasta que se necesita?", a:["En la vesícula biliar","En la vejiga","En el estómago","En el apéndice"], e:"La vesícula biliar es una bolsita debajo del hígado que guarda la bilis."},
-    {q:"¿Qué glándula produce el jugo pancreático?", a:["El páncreas","El hígado","La tiroides","El bazo"], e:"El jugo pancreático llega al intestino delgado y ayuda a digerir casi todo."},
+    {g:"higado", q:"¿Qué órgano fabrica la bilis, que ayuda a digerir las grasas?", a:["El hígado","El páncreas","El riñón","El corazón"], e:"El hígado fabrica la bilis. Es la glándula más grande del cuerpo."},
+    {g:"vesicula", q:"¿Dónde se guarda la bilis hasta que se necesita?", a:["En la vesícula biliar","En la vejiga","En el estómago","En el apéndice"], e:"La vesícula biliar es una bolsita debajo del hígado que guarda la bilis."},
+    {g:"pancreas", q:"¿Qué glándula produce el jugo pancreático?", a:["El páncreas","El hígado","La tiroides","El bazo"], e:"El jugo pancreático llega al intestino delgado y ayuda a digerir casi todo."},
     {q:"¿Cuál es la primera parte del intestino delgado?", a:["El duodeno","El colon","El recto","El ciego"], e:"El duodeno es donde llegan la bilis y el jugo pancreático."},
     {q:"Después de absorberse, ¿a dónde van los nutrientes?", a:["A la sangre","A los pulmones","Al pelo","A la saliva"], e:"La sangre reparte los nutrientes por todo el cuerpo para darnos energía."},
   ],
   grueso: [
-    {q:"¿Qué absorbe principalmente el intestino grueso?", a:["Agua","Proteínas","Grasas","Oxígeno"], e:"El intestino grueso recupera el agua y así las heces se vuelven más sólidas."},
-    {q:"¿Por dónde salen las heces del cuerpo?", a:["Por el ano","Por la boca","Por el píloro","Por el duodeno"], e:"El ano es el final del tubo digestivo. ¡Fin del viaje!"},
+    {g:"grueso", q:"¿Qué absorbe principalmente el intestino grueso?", a:["Agua","Proteínas","Grasas","Oxígeno"], e:"El intestino grueso recupera el agua y así las heces se vuelven más sólidas."},
+    {g:"ano", q:"¿Por dónde salen las heces del cuerpo?", a:["Por el ano","Por la boca","Por el píloro","Por el duodeno"], e:"El ano es el final del tubo digestivo. ¡Fin del viaje!"},
     {q:"¿Qué seres vivos viven en el intestino grueso y nos ayudan?", a:["Bacterias buenas (microbiota)","Peces","Gusanos de seda","Ninguno"], e:"Billones de bacterias buenas nos ayudan a digerir y a fabricar algunas vitaminas."},
     {q:"¿Qué alimentos ayudan a que el intestino funcione bien?", a:["Los que tienen fibra: frutas y verduras","Las golosinas","Los refrescos","Las papas fritas"], e:"La fibra ayuda a que los restos avancen bien por el intestino."},
     {q:"¿Cómo se llaman los desechos que expulsamos?", a:["Heces","Quimo","Bilis","Saliva"], e:"Las heces son los restos que el cuerpo no pudo aprovechar."},
     {q:"¿Qué pequeño órgano con forma de dedo está al inicio del intestino grueso?", a:["El apéndice","La amígdala","La úvula","La vesícula"], e:"El apéndice está conectado al principio del intestino grueso."},
     {q:"¿Qué intestino es más largo?", a:["El delgado","El grueso","Miden igual","Ninguno, son del mismo tamaño que el esófago"], e:"¡Sorpresa! El delgado mide unos 6 m y el grueso solo 1,5 m, pero es más ancho."},
     {q:"¿Por qué es importante tomar agua?", a:["Ayuda a la digestión y evita el estreñimiento","Hace crecer el pelo","No sirve para nada","Para que el estómago flote"], e:"El agua ayuda a que todo avance suavemente por el tubo digestivo."},
-    {q:"¿Cómo se llama la última parte del intestino grueso, donde se acumulan las heces?", a:["El recto","El duodeno","La faringe","El esófago"], e:"El recto guarda las heces hasta que vamos al baño."},
+    {g:"recto", q:"¿Cómo se llama la última parte del intestino grueso, donde se acumulan las heces?", a:["El recto","El duodeno","La faringe","El esófago"], e:"El recto guarda las heces hasta que vamos al baño."},
   ],
 };
+
+/* Topics from the school's syllabus:
+   1) función del sistema digestivo  2) ingestión y digestión  3) órganos, glándulas y partes con su función
+   4) recorrido del alimento y procesos en cada órgano */
+const GENERAL = [
+  {q:"¿Cuál es la función principal del sistema digestivo?", a:["Transformar los alimentos en nutrientes que el cuerpo puede usar","Llevar oxígeno a la sangre","Producir la orina","Mover los huesos"], e:"El sistema digestivo transforma los alimentos en nutrientes, los absorbe y expulsa lo que no sirve."},
+  {q:"¿Para qué necesita el cuerpo los nutrientes de los alimentos?", a:["Para tener energía, crecer y reparar el cuerpo","Solo para tener sed","Para respirar mejor","No los necesita"], e:"Los nutrientes nos dan energía y los materiales para crecer y reparar el cuerpo."},
+  {q:"¿Qué hace el sistema digestivo con lo que el cuerpo no puede aprovechar?", a:["Lo expulsa como heces","Lo guarda para siempre","Lo convierte en sangre","Lo manda a los pulmones"], e:"Lo que no se digiere ni se absorbe forma las heces, que se expulsan por el ano."},
+  {q:"¿Qué sistema reparte por el cuerpo los nutrientes que absorbe el sistema digestivo?", a:["El sistema circulatorio (la sangre)","El sistema óseo","El sistema muscular","El sistema digestivo solo"], e:"Los nutrientes pasan a la sangre y el sistema circulatorio los lleva a todas las células."},
+  {q:"¿Qué son los nutrientes?", a:["Sustancias pequeñas de los alimentos que el cuerpo absorbe y usa","Los restos que salen como heces","Un tipo de diente","Los jugos del estómago"], e:"La digestión rompe los alimentos en nutrientes tan pequeños que pueden pasar a la sangre."},
+  {q:"¿Qué es la ingestión?", a:["Incorporar los alimentos por la boca","Transformar los alimentos en nutrientes","Expulsar las heces","Pasar los nutrientes a la sangre"], e:"Ingestión es el ingreso del alimento al cuerpo por la boca."},
+  {q:"¿Qué es la digestión?", a:["Transformar los alimentos en sustancias más simples: los nutrientes","Meter el alimento en la boca","Expulsar los desechos","Respirar mientras comemos"], e:"La digestión transforma los alimentos en nutrientes, de forma mecánica y química."},
+  {q:"¿En qué se diferencian la ingestión y la digestión?", a:["La ingestión es incorporar el alimento; la digestión es transformarlo en nutrientes","Son exactamente lo mismo","La digestión ocurre antes que la ingestión","La ingestión ocurre en el intestino"], e:"Primero ingerimos (entra el alimento por la boca) y después lo digerimos (lo transformamos)."},
+  {q:"Llevarte una cucharada de sopa a la boca es un ejemplo de…", a:["Ingestión","Digestión química","Absorción","Egestión"], e:"Incorporar el alimento por la boca es la ingestión."},
+  {q:"Cuando el jugo gástrico deshace las proteínas, ¿qué proceso ocurre?", a:["Digestión química","Ingestión","Egestión","Digestión mecánica"], e:"Es digestión química: los jugos digestivos cambian los alimentos en sustancias más simples."},
+  {q:"Masticar la comida con los dientes es un ejemplo de…", a:["Digestión mecánica","Digestión química","Absorción","Egestión"], e:"Es digestión mecánica: se rompe el alimento en trozos más pequeños, sin cambiar qué sustancia es."},
+  {q:"¿Qué diferencia hay entre digestión mecánica y digestión química?", a:["La mecánica rompe en trozos; la química transforma con jugos digestivos","Son lo mismo","La mecánica ocurre solo en el ano","La química se hace con los dientes"], e:"Mecánica: dientes y músculos trituran y mezclan. Química: saliva, jugo gástrico, bilis y jugo pancreático transforman."},
+  {q:"Los movimientos del estómago que mezclan y aplastan la comida son digestión…", a:["Mecánica","Química","Ingestión","Absorción"], e:"Mezclar y aplastar con músculos es digestión mecánica."},
+  {q:"¿Cuál de estos procesos ocurre primero?", a:["La ingestión","La digestión","La absorción","La egestión"], e:"Primero el alimento entra por la boca (ingestión); después se digiere, se absorbe y se expulsa lo que sobra."},
+  {q:"¿Cómo se llama el paso de los nutrientes del intestino a la sangre?", a:["Absorción","Ingestión","Egestión","Masticación"], e:"La absorción ocurre sobre todo en el intestino delgado, a través de las vellosidades."},
+  {q:"¿Cómo se llama la expulsión de las heces por el ano?", a:["Egestión","Ingestión","Absorción","Digestión"], e:"La egestión (o defecación) es la salida de los desechos del cuerpo."},
+  {q:"¿Cuál es el orden correcto de los procesos?", a:["Ingestión → digestión → absorción → egestión","Digestión → ingestión → egestión → absorción","Absorción → ingestión → digestión → egestión","Egestión → absorción → digestión → ingestión"], e:"Entra el alimento, se transforma, los nutrientes pasan a la sangre y lo que sobra se expulsa."},
+  {q:"¿En qué parte del cuerpo ocurre la ingestión?", a:["En la boca","En el estómago","En el intestino grueso","En el hígado"], e:"La ingestión ocurre en la boca, la puerta de entrada del sistema digestivo."},
+  {q:"¿Qué parte de lo que comemos termina formando las heces?", a:["Lo que el cuerpo no pudo digerir ni absorber","Los nutrientes","Solo el agua","La saliva"], e:"Las heces son los restos que no se aprovechan, como parte de la fibra."},
+];
+
+// Organs, glands and parts with their function (used to build questions with fresh answer mixes every game).
+const PARTS = [
+  {id:"boca", n:"la boca", lv:0, c:"mouth", f:"Recibir el alimento, masticarlo y mezclarlo con saliva"},
+  {id:"dientes", n:"los dientes", pl:true, lv:0, c:"mouth", f:"Cortar, desgarrar y triturar los alimentos"},
+  {id:"lengua", n:"la lengua", lv:0, c:"mouth", f:"Mover el alimento, formar el bolo y sentir los sabores"},
+  {id:"salivales", n:"las glándulas salivales", pl:true, lv:0, gland:true, f:"Producir la saliva, que ablanda el alimento y empieza a digerir el almidón"},
+  {id:"faringe", n:"la faringe", lv:1, f:"Conducir el bolo desde la boca hasta el esófago"},
+  {id:"epiglotis", n:"la epiglotis", lv:1, f:"Tapar la tráquea al tragar para que la comida no vaya a los pulmones"},
+  {id:"esofago", n:"el esófago", lv:1, f:"Llevar el bolo hasta el estómago con movimientos peristálticos"},
+  {id:"estomago", n:"el estómago", lv:2, f:"Mezclar el alimento con jugo gástrico y transformarlo en quimo"},
+  {id:"delgado", n:"el intestino delgado", lv:3, f:"Terminar la digestión y absorber los nutrientes hacia la sangre"},
+  {id:"higado", n:"el hígado", lv:3, gland:true, c:"bile", f:"Producir la bilis, que ayuda a digerir las grasas"},
+  {id:"vesicula", n:"la vesícula biliar", lv:3, annex:true, c:"bile", f:"Guardar la bilis hasta que se necesita"},
+  {id:"pancreas", n:"el páncreas", lv:3, gland:true, f:"Producir el jugo pancreático, que ayuda a digerir casi todos los alimentos"},
+  {id:"grueso", n:"el intestino grueso", lv:4, f:"Absorber el agua y formar las heces"},
+  {id:"recto", n:"el recto", lv:4, f:"Acumular las heces hasta que se expulsan"},
+  {id:"ano", n:"el ano", lv:4, f:"Expulsar las heces del cuerpo (egestión)"},
+];
+const ROUTE = ["boca","faringe","esofago","estomago","delgado","grueso","recto","ano"];
+const part = id => PARTS.find(p => p.id === id);
+const cap = s => s[0].toUpperCase() + s.slice(1);
+const low = s => s[0].toLowerCase() + s.slice(1);
+const deN = n => n.startsWith("el ") ? "del " + n.slice(3) : "de " + n;
+const ROUTE_TEXT = "El recorrido es: " + ROUTE.map(id => part(id).n.replace(/^(el|la|los|las) /,"")).join(" → ") + ".";
+const ANNEX = PARTS.filter(p => p.gland || p.annex);
+
+function organQuestions(L){
+  const qs = [];
+  PARTS.filter(p => p.lv === L).forEach(p => {
+    const d = shuffle(PARTS.filter(o => o.id !== p.id && !(p.c && o.c === p.c))).slice(0,3);
+    qs.push({id:"fn:"+p.id, g:p.id, q:`¿Qué función cumple${p.pl?"n":""} ${p.n}?`, a:[p.f, ...d.map(o => o.f)], e:`${cap(p.n)}: ${low(p.f)}.`});
+    qs.push({id:"who:"+p.id, g:p.id, q:`¿Qué parte del sistema digestivo se encarga de ${low(p.f)}?`, a:[cap(p.n), ...d.map(o => cap(o.n))], e:`${cap(p.n)} se encarga${p.pl?"n":""} de ${low(p.f)}.`});
+    const i = ROUTE.indexOf(p.id);
+    if (i >= 0 && i < ROUTE.length-1){
+      const nx = part(ROUTE[i+1]);
+      const d2 = shuffle(PARTS.filter(o => (ROUTE.includes(o.id) || o.gland) && o.id !== p.id && o.id !== nx.id)).slice(0,3);
+      qs.push({id:"next:"+p.id, g:"next:"+p.id, q:`En el recorrido del alimento, ¿a qué órgano pasa después ${deN(p.n)}?`, a:[cap(nx.n), ...d2.map(o => cap(o.n))], e:ROUTE_TEXT});
+    }
+  });
+  return qs;
+}
+// Route questions with random content, different every time.
+function routeQuestions(){
+  const qs = [];
+  { // correct order of three organs
+    const idx = shuffle(ROUTE.map((_,i)=>i)).slice(0,3).sort((a,b)=>a-b);
+    const names = idx.map(i => part(ROUTE[i]).n.replace(/^(el|la) /,""));
+    const fmt = o => o.map(k => names[k]).join(" → ");
+    const perms = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+    const wrong = shuffle(perms.slice(1)).slice(0,3);
+    qs.push({id:"rnd:order", g:"order", q:"¿En qué orden pasa el alimento por estos órganos?", a:[fmt(perms[0]), ...wrong.map(fmt)].map(cap), e:ROUTE_TEXT});
+  }
+  { // which one comes first
+    const four = shuffle(ROUTE.slice(0,7)).slice(0,4);
+    const first = four.reduce((a,b) => ROUTE.indexOf(a) < ROUTE.indexOf(b) ? a : b);
+    qs.push({id:"rnd:first", g:"first", q:"De estos órganos, ¿por cuál pasa PRIMERO el alimento?", a:[first, ...four.filter(x => x !== first)].map(id => cap(part(id).n)), e:ROUTE_TEXT});
+  }
+  { // food does not go through annex organs
+    const an = pick(ANNEX), r = shuffle(ROUTE.map(part)).slice(0,3);
+    qs.push({id:"rnd:notroute", g:"notroute", q:"¿Por cuál de estos órganos NO pasa el alimento?", a:[cap(an.n), ...r.map(o => cap(o.n))], e:`El alimento no pasa por ${an.n}: es un órgano anexo que ayuda a la digestión desde afuera del tubo digestivo.`});
+  }
+  { // annex glands
+    const gl = pick(PARTS.filter(p => p.gland)), r = shuffle(ROUTE.map(part)).slice(0,3);
+    qs.push({id:"rnd:gland", g:"gland", q:"¿Cuál de estas es una glándula anexa del sistema digestivo?", a:[cap(gl.n), ...r.map(o => cap(o.n))], e:"Las glándulas anexas son las glándulas salivales, el hígado y el páncreas: fabrican jugos que ayudan a digerir."});
+  }
+  return qs;
+}
 
 const SAY_ASK = ["¡Tú puedes!","Piénsalo bien…","¡Esta es fácil!","Mmm… ¿cuál será?","¡Concéntrate!","¡Vamos, crack!"];
 const SAY_OK = ["¡Genial!","¡Increíble!","¡Eres un genio!","¡Correcto!","¡Bravo!","¡Toma ya!"];
@@ -504,8 +597,33 @@ function genLevel(L){
   game.items = items; game.length = x;
 }
 
+// Each level gets 3 questions: one general (función, ingestión/digestión or recorrido), one about the
+// organs/glands of that level, and one from the level's own list. Questions not seen recently come first.
 function pickQuestions(){
-  game.qset = LEVELS.map(l => shuffle(QUESTIONS[l.key]).slice(0,3));
+  const seen = new Set(store.get("vb.seen", []));
+  const used = new Set();
+  const choose = pool => {
+    let c = pool.filter(q => !used.has(q.g || q.id));
+    if (!c.length) c = pool;
+    let fresh = c.filter(q => !seen.has(q.id));
+    if (!fresh.length){ pool.forEach(q => seen.delete(q.id)); fresh = c; }
+    const q = pick(fresh); used.add(q.g || q.id); return q;
+  };
+  const general = GENERAL.map((q,i) => ({...q, id:"gen"+i}));
+  game.qset = LEVELS.map((l, L) => {
+    const hand = QUESTIONS[l.key].map((q,i) => ({...q, id:l.key+i}));
+    return shuffle([
+      choose(Math.random() < 0.35 ? routeQuestions() : general),
+      choose(organQuestions(L)),
+      choose(hand),
+    ]);
+  });
+  store.set("vb.seen", [...seen]);
+}
+function markSeen(q){
+  if (q.id.startsWith("rnd:")) return;
+  const seen = store.get("vb.seen", []);
+  if (!seen.includes(q.id)){ seen.push(q.id); store.set("vb.seen", seen); }
 }
 
 /* --- flow --- */
@@ -581,6 +699,7 @@ let currentQ = null, answered = false;
 function openQuiz(){
   game.state = "quiz"; stopMusic(); sfx.portal();
   const raw = game.qset[game.level][game.qn++];
+  markSeen(raw);
   const opts = shuffle(raw.a.map((text,i) => ({text, ok:i===0})));
   currentQ = {raw, opts}; answered = false;
   game.asked++;
