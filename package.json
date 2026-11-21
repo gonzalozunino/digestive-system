@@ -1,7 +1,7 @@
 {
-  "name": "el-viaje-de-bolo",
+  "name": "trivia-runner",
   "version": "1.0.0",
-  "description": "Juego de saltos y trivia en español sobre el sistema digestivo.",
+  "description": "Juego de saltos y trivia en español que funciona con cualquier tema.",
   "private": true,
   "type": "module",
   "scripts": {

@@ -1,6 +1,5 @@
-// The question card: mascot, prompt, four answer buttons and the feedback after answering.
+// The question card: the character, prompt, four answer buttons and the feedback after answering.
 import { byId, focusSoon } from "./dom.js";
-import { mascotSvg } from "../assets/mascot.js";
 import { MASCOT_LINES, TEXTS } from "../data/texts.js";
 import { pickOne } from "../utils/random.js";
 import { format } from "../utils/text.js";
@@ -18,11 +17,15 @@ export class QuizView {
     this.feedbackText = byId("quiz-feedback-text");
     this.continueButton = byId("quiz-continue");
     this.onAnswer = onAnswer;
+    this.character = null;
     this.continueButton.addEventListener("click", onContinue);
   }
 
-  show({ question, number, total, level, streak }) {
-    this.counter.textContent = format(TEXTS.quizCounter, { number, total, emoji: level.emoji, level: level.shortName });
+  /** The character that reacts to the answers. */
+  setCharacter(character) { this.character = character; }
+
+  show({ question, number, total, stage, streak }) {
+    this.counter.textContent = format(TEXTS.quizCounter, { number, total, emoji: stage.emoji, stage: stage.shortName });
     this.streak.textContent = streak >= 2 ? format(TEXTS.streak, { streak }) : "";
     this.prompt.textContent = question.prompt;
     this.#setMascot("think", MASCOT_LINES.ask);
@@ -67,7 +70,7 @@ export class QuizView {
   }
 
   #setMascot(mood, lines) {
-    this.mascot.innerHTML = mascotSvg(mood);
+    this.mascot.innerHTML = this.character.portrait(mood);
     this.say.textContent = pickOne(lines);
   }
 

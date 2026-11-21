@@ -1,6 +1,16 @@
-/* Main menu and difficulty selector. */
-.menu-card { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 1.2em; max-width: 46em; }
-.menu-card .stack { gap: 0.7em; }
+/* Main menu, character picker and difficulty selector. */
+.menu-card { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 1.2em; max-width: 48em; }
+.menu-card .stack { gap: 0.65em; }
+.menu-card .title { font-size: 3.2em; }
+.subject { font-size: 1.3em; font-weight: 800; color: var(--sky); }
+
+.character-picker { display: flex; gap: 0.4em; }
+.character-option {
+  width: 3.2em; height: 3.2em; padding: 0.15em; border-radius: 0.8em; background: var(--panel);
+  border: 3px solid transparent; transition: transform 0.08s;
+}
+.character-option:hover { transform: translateY(-2px); }
+.character-option[aria-pressed="true"] { border-color: var(--sky); background: #23405a; }
 
 .segmented { display: inline-flex; padding: 0.2em; border-radius: var(--radius); background: var(--panel); }
 .segmented button { padding: 0.3em 0.9em; border-radius: 0.6em; background: transparent; color: var(--muted); font-weight: 800; }

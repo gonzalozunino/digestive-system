@@ -1,16 +1,16 @@
-// High-score table.
+// High-score table of the current topic.
 import { byId } from "./dom.js";
-import { LEVELS } from "../data/levels.js";
 import { MEDALS, TEXTS } from "../data/texts.js";
 
-function reachedLabel(record) {
-  if (typeof record.reached === "string") return record.reached;  // saved by an older version
-  return LEVELS[record.reachedLevel]?.shortName ?? TEXTS.recordsFinished;
-}
-
 export class RecordsView {
-  constructor() {
+  /** @param stages the topic's stages, to show how far each player got */
+  constructor(stages) {
     this.body = byId("records-body");
+    this.stages = stages;
+  }
+
+  #reachedLabel(record) {
+    return this.stages[record.reachedStage]?.shortName ?? TEXTS.recordsFinished;
   }
 
   render(records, highlightIndex = -1) {
@@ -27,7 +27,7 @@ export class RecordsView {
     this.body.replaceChildren(...records.map((record, i) => {
       const row = document.createElement("tr");
       if (i === highlightIndex) row.className = "records__row--mine";
-      [MEDALS[i] ?? String(i + 1), record.name, reachedLabel(record), String(record.score)].forEach((value, column) => {
+      [MEDALS[i] ?? String(i + 1), record.name, this.#reachedLabel(record), String(record.score)].forEach((value, column) => {
         const cell = document.createElement("td");
         cell.textContent = value;
         if (column === 3) cell.className = "records__number";

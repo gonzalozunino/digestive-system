@@ -3,8 +3,8 @@
 // Topics follow the school syllabus: función del sistema digestivo; ingestión y digestión;
 // órganos, glándulas y partes con su función; recorrido del alimento.
 
-/** Questions specific to each organ, keyed by level id. */
-export const ORGAN_QUESTIONS = {
+/** Questions specific to each stage (organ), keyed by stage id. */
+export const STAGE_QUESTIONS = {
   boca: [
     {prompt: "¿Dónde comienza la digestión?", answers: ["En la boca","En el estómago","En el intestino delgado","En el esófago"], explanation: "En la boca los dientes trituran la comida y la saliva empieza a digerirla."},
     {group: "salivales", prompt: "¿Qué líquido se produce en la boca y ablanda la comida?", answers: ["La saliva","La bilis","El jugo gástrico","La sangre"], explanation: "Las glándulas salivales fabrican saliva: ¡más de un litro al día!"},

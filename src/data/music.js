@@ -1,5 +1,13 @@
-// Background music: a 4-bar loop in 16th-note steps. Each level sets its own key and tempo
-// (see LEVELS[].music). Notes are MIDI numbers relative to the level's root note.
+// Background music: a 4-bar loop in 16th-note steps, in a different key and tempo for each stage
+// (STAGE_TRACKS, by position; a topic stage may set its own `music`). Notes are MIDI numbers.
+
+export const STAGE_TRACKS = [
+  { rootNote: 57, bpm: 126 },
+  { rootNote: 55, bpm: 132 },
+  { rootNote: 52, bpm: 138 },
+  { rootNote: 54, bpm: 144 },
+  { rootNote: 50, bpm: 150 },
+];
 
 export const MUSIC = {
   stepsPerBeat: 4,

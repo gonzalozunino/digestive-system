@@ -1,7 +1,6 @@
-// Builds the list of world items (obstacles, pickups, portals, goal) for a level from data.
+// Builds the list of world items (obstacles, pickups, portals, goal) for a stage from data.
 import { WORLD, LAYOUT, ITEM_SIZES } from "../data/config.js";
-import { LEVELS } from "../data/levels.js";
-import { PATTERNS, COLLECTIBLE_ARC } from "../data/obstaclePatterns.js";
+import { PATTERNS, OBSTACLE_POOLS, COLLECTIBLE_ARC } from "../data/obstaclePatterns.js";
 import { pickOne, randomBetween } from "../utils/random.js";
 
 const T = WORLD.tile;
@@ -37,27 +36,34 @@ function collectibleArc(centerX, count) {
   });
 }
 
+/** Obstacle mix for a stage: later stages (and harder difficulties) get harder patterns. */
+export function obstaclePoolFor(stageIndex, difficulty) {
+  const index = Math.min(stageIndex + (difficulty.obstacleBoost ?? 0), OBSTACLE_POOLS.length - 1);
+  return OBSTACLE_POOLS[index];
+}
+
 /**
- * @param {number} levelIndex
- * @param {{gapTiles:[number,number]}} difficulty
+ * @param {number} stageIndex position of the stage in the topic (0-based)
+ * @param {{gapTiles:[number,number], obstacleBoost?:number}} difficulty
  * @returns {{items: object[], length: number}}
  */
-export function buildLevel(levelIndex, difficulty, rng = Math.random) {
-  const level = LEVELS[levelIndex];
+export function buildStage(stageIndex, difficulty, rng = Math.random) {
+  const pool = obstaclePoolFor(stageIndex, difficulty);
+  const shrink = 1 - Math.min(stageIndex, OBSTACLE_POOLS.length - 1) * LAYOUT.gapShrinkPerStage;
   const items = [];
   let x = LAYOUT.startX;
 
-  const gap = () => T * randomBetween(...difficulty.gapTiles, rng) * (1 - levelIndex * LAYOUT.gapShrinkPerLevel);
+  const gap = () => T * randomBetween(...difficulty.gapTiles, rng) * shrink;
   const addPatterns = count => {
     for (let i = 0; i < count; i++) {
-      const pattern = PATTERNS[pickOne(level.obstacles, rng)];
+      const pattern = PATTERNS[pickOne(pool, rng)];
       pattern.items.forEach(spec => items.push(...placePatternItem(spec, x, rng)));
       x += pattern.width * T + gap();
     }
   };
 
-  for (let q = 0; q < LAYOUT.questionsPerLevel; q++) {
-    addPatterns(LAYOUT.patternsBeforeQuestion + levelIndex + q);
+  for (let q = 0; q < LAYOUT.questionsPerStage; q++) {
+    addPatterns(LAYOUT.patternsBeforeQuestion + Math.min(stageIndex, OBSTACLE_POOLS.length - 1) + q);
     x += LAYOUT.beforePortal;
     items.push({ type: "portal", x, y: GROUND - ITEM_SIZES.portal.h, ...ITEM_SIZES.portal });
     if (q === LAYOUT.heartAfterQuestion) {
@@ -65,12 +71,12 @@ export function buildLevel(levelIndex, difficulty, rng = Math.random) {
     }
     x += LAYOUT.afterPortal;
   }
-  addPatterns(LAYOUT.patternsBeforeGoal + levelIndex);
+  addPatterns(LAYOUT.patternsBeforeGoal + Math.min(stageIndex, OBSTACLE_POOLS.length - 1));
   x += LAYOUT.beforeGoal;
   items.push({ type: "goal", x, y: GROUND - ITEM_SIZES.goal.h, ...ITEM_SIZES.goal });
 
   items.sort((a, b) => a.x - b.x);
-  // Variant picks which of the level's collectible kinds/colors each pickup shows.
+  // Variant picks which of the stage's collectible kinds/colors each pickup shows.
   items.filter(it => it.type === "collectible").forEach((it, i) => { it.variant = i; });
   return { items, length: x };
 }

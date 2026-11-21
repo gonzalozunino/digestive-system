@@ -8,6 +8,7 @@ body {
   touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
 }
 [hidden] { display: none !important; }
+body.topic-error { display: block; padding: 2em; white-space: pre-wrap; font-family: ui-monospace, monospace; }
 
 h1, h2, p { margin: 0; }
 h2 { font-size: 2em; line-height: 1.05; text-wrap: balance; }

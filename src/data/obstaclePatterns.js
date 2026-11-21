@@ -1,4 +1,4 @@
-// Obstacle patterns used to build levels. All positions are in tiles (see WORLD.tile).
+// Obstacle patterns used to build stages. All positions are in tiles (see WORLD.tile).
 // x: offset from the pattern start. Spikes and blocks stand on the ground.
 // block: w/h size in tiles. collectible: `lift` = height of its center above the ground.
 // arc: a curve of `count` collectibles centered at x, added with probability `chance`.
@@ -41,6 +41,15 @@ export const PATTERNS = {
   ] },
   coins: { width: 5, items: [0.5, 1.5, 2.5, 3.5, 4.5].map(x => ({ type: "collectible", x, lift: 0.5 })) },
 };
+
+/** Which patterns can appear in each stage (by position; later stages use the last list). */
+export const OBSTACLE_POOLS = [
+  ["s1", "s1", "s2", "b1", "bwide", "coins"],
+  ["s1", "s2", "s2", "b1", "bwide", "spikeB", "stairs"],
+  ["s1", "s2", "s3", "spikeB", "stairs", "bridge", "bwide"],
+  ["s2", "s3", "spikeB", "stairs", "bridge", "tall", "b1"],
+  ["s2", "s3", "s3", "spikeB", "stairs", "bridge", "tall", "bwide"],
+];
 
 /** Shape of a collectible arc, in tiles. */
 export const COLLECTIBLE_ARC = { spacing: 0.9, peakLift: 3, dropPerStep: 0.55 };

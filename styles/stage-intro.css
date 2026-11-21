@@ -1,0 +1,5 @@
+/* Card introducing each stage. */
+.stage-card { display: grid; justify-items: center; gap: 0.7em; max-width: 34em; text-align: center; }
+.stage-card__emoji { font-size: 4.5em; line-height: 1; }
+.stage-card__text { font-size: 1.1em; }
+.stage-card__collect { color: var(--sky); font-weight: 700; }

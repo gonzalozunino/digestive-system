@@ -28,24 +28,27 @@ export const PLAYER = {
   blockSideInset: 2,
 };
 
+// obstacleBoost: how many stages ahead the obstacle mix starts (harder patterns earlier).
 export const DIFFICULTY = {
-  easy:   { hearts: 5, speedFactor: 0.85, gapTiles: [6, 9], musicTempo: 0.92 },
-  normal: { hearts: 3, speedFactor: 1,    gapTiles: [5, 8], musicTempo: 1 },
+  easy:   { hearts: 5, speedFactor: 0.85, gapTiles: [6, 9],   musicTempo: 0.92, obstacleBoost: 0 },
+  normal: { hearts: 3, speedFactor: 1,    gapTiles: [5, 8],   musicTempo: 1,    obstacleBoost: 0 },
+  hard:   { hearts: 2, speedFactor: 1.15, gapTiles: [5, 7.5], musicTempo: 1.08, obstacleBoost: 1 },
 };
 export const DEFAULT_DIFFICULTY = "easy";
 
-export const SPEED = { base: 400, perLevel: 38 };
+// Speed grows with each stage, up to `maxStageSteps` stages (topics may have many stages).
+export const SPEED = { base: 400, perStage: 38, maxStageSteps: 4 };
 
-/** How a level is laid out along the x axis (px unless noted). */
+/** How a stage is laid out along the x axis (px unless noted). */
 export const LAYOUT = {
   startX: 700,
-  questionsPerLevel: 3,
-  patternsBeforeQuestion: 4,   // + level index + question index
-  patternsBeforeGoal: 4,       // + level index
-  gapShrinkPerLevel: 0.04,
+  questionsPerStage: 3,
+  patternsBeforeQuestion: 4,   // + stage index + question index
+  patternsBeforeGoal: 4,       // + stage index
+  gapShrinkPerStage: 0.04,
   beforePortal: 160,
   afterPortal: 560,            // obstacle-free run after a question
-  heartAfterQuestion: 1,       // which question is followed by a heart pickup
+  heartAfterQuestion: 1,       // which question is followed by a heart pickup (0-based)
   heartOffset: 260,
   beforeGoal: 200,
 };
@@ -63,7 +66,7 @@ export const SCORING = {
   heartWhenFull: 50,
   correctAnswer: 100,
   streakBonus: 50,     // extra points per answer already in the streak
-  levelComplete: 200,
+  stageComplete: 200,
 };
 
 export const TIMING = {
@@ -71,22 +74,24 @@ export const TIMING = {
   hitShake: 14,
   wrongAnswerShake: 10,
   deathDelay: 0.9,
-  nextLevelDelay: 0.9,
+  nextStageDelay: 0.9,
   victoryDelay: 0.7,
 };
 
 export const QUIZ = {
-  routeQuestionChance: 0.35,  // chance the general slot uses a generated route question
+  sequenceQuestionChance: 0.35,  // chance the general slot uses a generated sequence/category question
 };
 
 export const RECORDS = { max: 10, nameMaxLength: 12 };
 
 export const AUDIO = { masterVolume: 0.8, musicVolume: 0.32, sfxVolume: 0.6 };
 
+/** Preferences are shared by all topics; records and question history are kept per topic. */
 export const STORAGE_KEYS = {
-  muted: "vb.muted",
-  difficulty: "vb.easy",
-  records: "vb.records",
-  lastName: "vb.lastName",
-  seenQuestions: "vb.seen",
+  muted: "tr.muted",
+  difficulty: "tr.difficulty",
+  character: "tr.character",
+  lastName: "tr.lastName",
+  records: topicId => `tr.${topicId}.records`,
+  seenQuestions: topicId => `tr.${topicId}.seen`,
 };

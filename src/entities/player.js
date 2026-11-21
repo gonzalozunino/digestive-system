@@ -1,4 +1,4 @@
-// Bolo, the player: physical state and movement. Knows nothing about levels, UI or sound.
+// The player: physical state and movement. Knows nothing about stages, UI, sound or how it looks.
 import { WORLD, PHYSICS, PLAYER } from "../data/config.js";
 
 const FULL_TURN = Math.PI * 2;

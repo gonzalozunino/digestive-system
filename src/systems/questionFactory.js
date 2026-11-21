@@ -1,98 +1,112 @@
-// Builds questions from the anatomy data, so answer mixes are different every game.
-// Every question has the shape { id, group, prompt, answers: [correct, ...wrong], explanation }.
-import { PARTS, ROUTE } from "../data/anatomy.js";
-import { QUESTION_TEMPLATES as Q } from "../data/texts.js";
+// Builds questions from a topic's concepts, sequence and categories, so the answer mixes are
+// different every game. Every question has the shape { id, group, prompt, answers: [correct, ...wrong], explanation }.
+// Wording comes from the topic (topic.questionWording, with defaults in src/topic/defaults.js).
 import { pickOne, shuffle } from "../utils/random.js";
 import { capitalize, lowercaseFirst, withDe, withoutArticle, format } from "../utils/text.js";
 
-const partById = id => PARTS.find(p => p.id === id);
-const routeParts = ROUTE.map(partById);
-const annexParts = PARTS.filter(p => p.gland || p.annex);
-const glands = PARTS.filter(p => p.gland);
-
-const routeExplanation = () => format(Q.routeExplanation, {
-  route: routeParts.map(p => withoutArticle(p.name)).join(Q.routeSeparator),
+const nameValues = concept => ({
+  name: concept.name, Name: capitalize(concept.name), n: concept.plural ? "n" : "", deName: withDe(concept.name),
 });
 
-function wrongPartsFor(part, rng) {
-  const candidates = PARTS.filter(o => o.id !== part.id && !(part.similarTo && o.similarTo === part.similarTo));
+function context(topic) {
+  const byId = new Map(topic.concepts.map(c => [c.id, c]));
+  const sequence = topic.sequence.map(id => byId.get(id));
+  const outside = topic.concepts.filter(c => c.outsideSequence);
+  const wording = topic.questionWording;
+  const sequenceText = sequence.map(c => withoutArticle(c.name)).join(wording.sequenceSeparator);
+  return { byId, sequence, outside, wording, sequenceExplanation: format(wording.sequenceExplanation, { sequence: sequenceText }) };
+}
+
+/* ---------- questions about one concept ---------- */
+
+function wrongConceptsFor(concept, concepts, rng) {
+  const candidates = concepts.filter(o => o.id !== concept.id && !(concept.similarTo && o.similarTo === concept.similarTo));
   return shuffle(candidates, rng).slice(0, 3);
 }
 
-function roleOf(part, wrong) {
-  const pluralN = part.plural ? "n" : "";
+function roleOf(concept, wrong, { wording }) {
+  const values = { ...nameValues(concept), role: lowercaseFirst(concept.role) };
   return {
-    id: "role:" + part.id, group: part.id,
-    prompt: format(Q.roleOf, { pluralN, name: part.name }),
-    answers: [part.role, ...wrong.map(o => o.role)],
-    explanation: format(Q.roleOfExplanation, { Name: capitalize(part.name), role: lowercaseFirst(part.role) }),
+    id: "role:" + concept.id, group: concept.id,
+    prompt: format(wording.conceptRole, values),
+    answers: [concept.role, ...wrong.map(o => o.role)],
+    explanation: format(wording.conceptRoleExplanation, values),
   };
 }
 
-function partFor(part, wrong) {
-  const pluralN = part.plural ? "n" : "";
+function conceptFor(concept, wrong, { wording }) {
+  const values = { ...nameValues(concept), role: lowercaseFirst(concept.role) };
   return {
-    id: "part:" + part.id, group: part.id,
-    prompt: format(Q.partFor, { role: lowercaseFirst(part.role) }),
-    answers: [capitalize(part.name), ...wrong.map(o => capitalize(o.name))],
-    explanation: format(Q.partForExplanation, { Name: capitalize(part.name), pluralN, role: lowercaseFirst(part.role) }),
+    id: "for:" + concept.id, group: concept.id,
+    prompt: format(wording.conceptFor, values),
+    answers: [capitalize(concept.name), ...wrong.map(o => capitalize(o.name))],
+    explanation: format(wording.conceptForExplanation, values),
   };
 }
 
-function nextInRoute(part, rng) {
-  const index = ROUTE.indexOf(part.id);
-  if (index < 0 || index === ROUTE.length - 1) return null;
-  const next = partById(ROUTE[index + 1]);
-  const wrong = shuffle(PARTS.filter(o => (ROUTE.includes(o.id) || o.gland) && o.id !== part.id && o.id !== next.id), rng).slice(0, 3);
+function nextInSequence(concept, ctx, rng) {
+  const index = ctx.sequence.indexOf(concept);
+  if (index < 0 || index === ctx.sequence.length - 1) return null;
+  const next = ctx.sequence[index + 1];
+  const candidates = [...ctx.sequence, ...ctx.outside].filter(o => o !== concept && o !== next);
+  if (candidates.length < 3) return null;
+  const wrong = shuffle(candidates, rng).slice(0, 3);
   return {
-    id: "next:" + part.id, group: "next:" + part.id,
-    prompt: format(Q.nextInRoute, { ofName: withDe(part.name) }),
+    id: "next:" + concept.id, group: "next:" + concept.id,
+    prompt: format(ctx.wording.sequenceNext, nameValues(concept)),
     answers: [capitalize(next.name), ...wrong.map(o => capitalize(o.name))],
-    explanation: routeExplanation(),
+    explanation: ctx.sequenceExplanation,
   };
 }
 
-/** Questions about the organs, glands and parts that belong to a level. */
-export function organQuestions(levelId, rng = Math.random) {
-  return PARTS.filter(p => p.level === levelId).flatMap(part => {
-    const wrong = wrongPartsFor(part, rng);
-    return [roleOf(part, wrong), partFor(part, wrong), nextInRoute(part, rng)].filter(Boolean);
+/** Questions about the concepts that belong to a stage. */
+export function conceptQuestions(topic, stageId, rng = Math.random) {
+  if (topic.concepts.length < 4) return [];
+  const ctx = context(topic);
+  return topic.concepts.filter(c => c.stage === stageId).flatMap(concept => {
+    const wrong = wrongConceptsFor(concept, topic.concepts, rng);
+    if (wrong.length < 3) return [nextInSequence(concept, ctx, rng)].filter(Boolean);
+    return [roleOf(concept, wrong, ctx), conceptFor(concept, wrong, ctx), nextInSequence(concept, ctx, rng)].filter(Boolean);
   });
 }
 
-/** Questions about the path of the food, with random organs each time. Ids start with "rnd:". */
-export function routeQuestions(rng = Math.random) {
-  const questions = [];
+/* ---------- questions about the whole sequence and categories (random content, ids "rnd:") ---------- */
 
-  { // correct order of three organs
-    const indexes = shuffle(ROUTE.map((_, i) => i), rng).slice(0, 3).sort((a, b) => a - b);
-    const names = indexes.map(i => withoutArticle(routeParts[i].name));
-    const asText = order => capitalize(order.map(k => names[k]).join(Q.routeSeparator));
+/** Questions about the order of the sequence, items outside it and categories. */
+export function sequenceQuestions(topic, rng = Math.random) {
+  const ctx = context(topic);
+  const { sequence, outside, wording } = ctx;
+  const questions = [];
+  const named = c => capitalize(c.name);
+
+  if (sequence.length >= 3) { // correct order of three items
+    const picked = shuffle(sequence, rng).slice(0, 3).sort((a, b) => sequence.indexOf(a) - sequence.indexOf(b));
+    const names = picked.map(c => withoutArticle(c.name));
+    const asText = order => capitalize(order.map(k => names[k]).join(wording.sequenceSeparator));
     const orders = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
-    const wrong = shuffle(orders.slice(1), rng).slice(0, 3);
-    questions.push({ id: "rnd:order", group: "order", prompt: Q.routeOrder,
-      answers: [asText(orders[0]), ...wrong.map(asText)], explanation: routeExplanation() });
+    questions.push({ id: "rnd:order", group: "order", prompt: wording.sequenceOrder,
+      answers: [asText(orders[0]), ...shuffle(orders.slice(1), rng).slice(0, 3).map(asText)],
+      explanation: ctx.sequenceExplanation });
   }
-  { // which one comes first (the last organ is never the answer, so leave it out)
-    const four = shuffle(ROUTE.slice(0, -1), rng).slice(0, 4);
-    const first = four.reduce((a, b) => (ROUTE.indexOf(a) < ROUTE.indexOf(b) ? a : b));
-    questions.push({ id: "rnd:first", group: "first", prompt: Q.firstInRoute,
-      answers: [first, ...four.filter(id => id !== first)].map(id => capitalize(partById(id).name)),
-      explanation: routeExplanation() });
+  if (sequence.length >= 5) { // which comes first (the last item can never be the answer, so leave it out)
+    const four = shuffle(sequence.slice(0, -1), rng).slice(0, 4);
+    const first = four.reduce((a, b) => (sequence.indexOf(a) < sequence.indexOf(b) ? a : b));
+    questions.push({ id: "rnd:first", group: "first", prompt: wording.sequenceFirst,
+      answers: [first, ...four.filter(c => c !== first)].map(named), explanation: ctx.sequenceExplanation });
   }
-  { // food does not go through annex organs
-    const annex = pickOne(annexParts, rng);
-    const wrong = shuffle(routeParts, rng).slice(0, 3);
-    questions.push({ id: "rnd:notroute", group: "notroute", prompt: Q.notInRoute,
-      answers: [capitalize(annex.name), ...wrong.map(o => capitalize(o.name))],
-      explanation: format(Q.notInRouteExplanation, { name: annex.name }) });
+  if (outside.length && sequence.length >= 3) { // not part of the sequence
+    const odd = pickOne(outside, rng);
+    questions.push({ id: "rnd:outside", group: "outside", prompt: wording.outside,
+      answers: [odd, ...shuffle(sequence, rng).slice(0, 3)].map(named),
+      explanation: format(wording.outsideExplanation, nameValues(odd)) });
   }
-  { // annex glands
-    const gland = pickOne(glands, rng);
-    const wrong = shuffle(routeParts, rng).slice(0, 3);
-    questions.push({ id: "rnd:gland", group: "gland", prompt: Q.annexGland,
-      answers: [capitalize(gland.name), ...wrong.map(o => capitalize(o.name))],
-      explanation: Q.annexGlandExplanation });
+  for (const category of topic.categories) { // which one belongs to a category
+    const members = topic.concepts.filter(c => c.categories?.includes(category.id));
+    const pool = sequence.length ? sequence : topic.concepts;
+    const others = pool.filter(c => !c.categories?.includes(category.id));
+    if (!members.length || others.length < 3) continue;
+    questions.push({ id: "rnd:category:" + category.id, group: "category:" + category.id, prompt: category.prompt,
+      answers: [pickOne(members, rng), ...shuffle(others, rng).slice(0, 3)].map(named), explanation: category.explanation });
   }
   return questions;
 }

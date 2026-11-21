@@ -1,5 +1,0 @@
-/* Card introducing each organ. */
-.level-card { display: grid; justify-items: center; gap: 0.7em; max-width: 34em; text-align: center; }
-.level-card__emoji { font-size: 4.5em; line-height: 1; }
-.level-card__text { font-size: 1.1em; }
-.level-card__collect { color: var(--sky); font-weight: 700; }

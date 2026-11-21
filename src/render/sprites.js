@@ -1,15 +1,16 @@
 // Drawing of world objects and the player. Positions are screen coordinates.
+// Spikes and blocks take their look from the stage scenery (see scenery.js).
 import { WORLD, PLAYER } from "../data/config.js";
 import { VISUALS } from "../data/visuals.js";
 import { roundRectPath } from "./canvasUtils.js";
 
 const T = WORLD.tile;
 
-export function drawSpike(ctx, theme, x, y) {
-  const { spike, spikeEdge } = theme.colors;
+export function drawSpike(ctx, scenery, x, y) {
+  const { spike, spikeEdge } = scenery.colors;
   ctx.fillStyle = spike;
   ctx.strokeStyle = spikeEdge;
-  if (theme.spikeStyle === "tooth") {
+  if (scenery.spikeStyle === "tooth") {
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(x + 3, y + T); ctx.lineTo(x + 8, y + 10);
@@ -22,7 +23,7 @@ export function drawSpike(ctx, theme, x, y) {
   }
   ctx.lineWidth = 3;
   ctx.shadowColor = spike;
-  ctx.shadowBlur = theme.spikeGlow;
+  ctx.shadowBlur = scenery.spikeGlow ?? 0;
   ctx.beginPath(); ctx.moveTo(x + 2, y + T); ctx.lineTo(x + T / 2, y + 2); ctx.lineTo(x + T - 2, y + T); ctx.closePath();
   ctx.fill(); ctx.stroke();
   ctx.shadowBlur = 0;
@@ -30,9 +31,9 @@ export function drawSpike(ctx, theme, x, y) {
   ctx.beginPath(); ctx.moveTo(x + T / 2, y + 8); ctx.lineTo(x + T / 2 - 5, y + T - 6); ctx.lineTo(x + T / 2, y + T - 6); ctx.closePath(); ctx.fill();
 }
 
-export function drawBlock(ctx, theme, block, x) {
-  ctx.fillStyle = theme.colors.block;
-  ctx.strokeStyle = theme.colors.blockEdge;
+export function drawBlock(ctx, scenery, block, x) {
+  ctx.fillStyle = scenery.colors.block;
+  ctx.strokeStyle = scenery.colors.blockEdge;
   ctx.lineWidth = 3;
   roundRectPath(ctx, x + 1.5, block.y + 1.5, block.w - 3, block.h - 1.5, 8); ctx.fill(); ctx.stroke();
   ctx.strokeStyle = "rgba(255,255,255,.18)";
@@ -76,37 +77,6 @@ export function drawGoal(ctx, goal, x, time, { label, icon }) {
   ctx.restore();
 }
 
-/** A collectible: a drop of digestive juice with a face, or a friendly bacterium. */
-export function drawCollectible(ctx, kind, item, x, time) {
-  const color = kind.colors[item.variant % kind.colors.length];
-  const isBacteria = kind.style === "bacteria";
-  ctx.save();
-  ctx.translate(x, item.y + Math.sin(time * 5 + item.x * 0.05) * 3);
-  ctx.shadowColor = color; ctx.shadowBlur = 12;
-  ctx.fillStyle = color; ctx.strokeStyle = "rgba(27,15,46,.55)"; ctx.lineWidth = 2;
-  if (isBacteria) {
-    ctx.rotate(Math.sin(time * 3 + item.x) * 0.3);
-    roundRectPath(ctx, -15, -9, 30, 18, 9); ctx.fill(); ctx.stroke();
-    ctx.shadowBlur = 0; ctx.strokeStyle = color;
-    for (const side of [-1, 1]) {
-      ctx.beginPath(); ctx.moveTo(side * 15, 0); ctx.quadraticCurveTo(side * 21, Math.sin(time * 10) * 5, side * 24, 0); ctx.stroke();
-    }
-  } else {
-    ctx.beginPath();
-    ctx.moveTo(0, -16); ctx.bezierCurveTo(6, -7, 11, -1, 11, 4);
-    ctx.arc(0, 4, 11, 0, Math.PI); ctx.bezierCurveTo(-11, -1, -6, -7, 0, -16); ctx.closePath();
-    ctx.fill(); ctx.stroke();
-    ctx.shadowBlur = 0; ctx.fillStyle = "rgba(255,255,255,.7)";
-    ctx.beginPath(); ctx.ellipse(-5, -1, 2.2, 4, 0.4, 0, Math.PI * 2); ctx.fill();
-  }
-  const faceY = isBacteria ? -2 : 4;
-  ctx.shadowBlur = 0; ctx.fillStyle = VISUALS.ink;
-  ctx.beginPath(); ctx.arc(-3.5, faceY, 1.8, 0, 7); ctx.arc(3.5, faceY, 1.8, 0, 7); ctx.fill();
-  ctx.strokeStyle = VISUALS.ink; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.arc(0, faceY + 3, 3, 0.3, Math.PI - 0.3); ctx.stroke();
-  ctx.restore();
-}
-
 export function drawHeart(ctx, item, x, time) {
   const { fill, glow } = VISUALS.heart;
   ctx.save();
@@ -121,24 +91,15 @@ export function drawHeart(ctx, item, x, time) {
 }
 
 /**
- * Bolo. `pose` = { x, y, rotation, grounded, squash } in screen coordinates (x,y = top-left).
+ * The player's character. `pose` = { x, y, rotation, grounded, squash } in screen coordinates
+ * (x,y = top-left); the character draws itself centered at the origin.
  */
-export function drawPlayer(ctx, pose, bodyColor) {
-  const v = VISUALS.player;
+export function drawPlayer(ctx, pose, character, { time, tint }) {
   const r = PLAYER.size / 2;
   ctx.save();
   ctx.translate(pose.x + r, pose.y + r + pose.squash * 4);
   ctx.scale(1 + pose.squash * 0.18, 1 - pose.squash * 0.18);
   ctx.rotate(pose.rotation);
-  ctx.fillStyle = bodyColor; ctx.strokeStyle = v.outline; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = v.spots; ctx.beginPath(); ctx.arc(-9, -8, 3, 0, 7); ctx.arc(9, 10, 3.5, 0, 7); ctx.fill();
-  ctx.fillStyle = v.seed; ctx.beginPath(); ctx.arc(10, -7, 2.2, 0, 7); ctx.fill();
-  ctx.fillStyle = v.eye; ctx.beginPath(); ctx.ellipse(-5, -3, 4.5, 5.5, 0, 0, 7); ctx.ellipse(6, -3, 4.5, 5.5, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = v.pupil; ctx.beginPath(); ctx.arc(-4, -2, 2.4, 0, 7); ctx.arc(7, -2, 2.4, 0, 7); ctx.fill();
-  ctx.strokeStyle = v.mouth; ctx.lineWidth = 2.5; ctx.beginPath();
-  if (pose.grounded) ctx.arc(1, 5, 5, 0.2, Math.PI - 0.2);
-  else ctx.ellipse(1, 8, 3, 3.5, 0, 0, 7);
-  ctx.stroke();
+  character.draw(ctx, { radius: r, grounded: pose.grounded, time, tint });
   ctx.restore();
 }

@@ -1,46 +1,58 @@
 // Chooses the questions for one game and prepares them for display.
-// Each level gets one general question (función, ingestión/digestión or recorrido), one about the
-// level's organs/glands and one from the level's own list. Questions not seen recently come first,
-// and two questions about the same topic (`group`) are never asked in the same game.
-import { LEVELS } from "../data/levels.js";
+// Each stage gets one general question (written or about the sequence/categories), one about the
+// stage's concepts and one from the stage's own list. When a pool is empty the slot falls back to
+// the others. Questions not seen recently come first, and two questions about the same topic
+// (`group`) are never asked in the same game.
 import { LAYOUT, QUIZ } from "../data/config.js";
-import { ORGAN_QUESTIONS, GENERAL_QUESTIONS } from "../data/questions.js";
-import { organQuestions, routeQuestions } from "./questionFactory.js";
+import { conceptQuestions, sequenceQuestions } from "./questionFactory.js";
 import { pickOne, shuffle } from "../utils/random.js";
 
-export const QUESTIONS_PER_GAME = LEVELS.length * LAYOUT.questionsPerLevel;
+export const questionsPerGame = topic => topic.stages.length * LAYOUT.questionsPerStage;
 
 const withIds = (questions, prefix) => questions.map((q, i) => ({ ...q, id: q.id ?? prefix + i }));
 
 /**
- * @param {{seen?: Set<string>, rng?: () => number}} options
- * @returns {{questionsByLevel: object[][], seen: Set<string>}} `seen` may have been reset for exhausted pools.
+ * @param {{topic: object, seen?: Set<string>, rng?: () => number}} options
+ * @returns {{questionsByStage: object[][], seen: Set<string>}} `seen` may have been reset for exhausted pools.
  */
-export function pickQuestions({ seen = new Set(), rng = Math.random } = {}) {
+export function pickQuestions({ topic, seen = new Set(), rng = Math.random }) {
   seen = new Set(seen);
   const usedGroups = new Set();
-  const general = withIds(GENERAL_QUESTIONS, "gen");
+  const usedIds = new Set();
+  const general = withIds(topic.generalQuestions, "gen");
+  const generated = sequenceQuestions(topic, rng);
+  const stagePools = topic.stages.map(stage => ({
+    concepts: conceptQuestions(topic, stage.id, rng),
+    own: withIds(stage.questions, stage.id + ":"),
+  }));
+  const everything = [general, generated, ...stagePools.flatMap(p => [p.concepts, p.own])].flat();
 
-  const choose = pool => {
-    let candidates = pool.filter(q => !usedGroups.has(q.group ?? q.id));
-    if (!candidates.length) candidates = pool;
+  const available = pool => pool.filter(q => !usedIds.has(q.id) && !usedGroups.has(q.group ?? q.id));
+  const choose = (...pools) => {
+    const pool = [...pools, everything].find(p => available(p).length) ?? everything;
+    const candidates = available(pool).length ? available(pool) : pool.filter(q => !usedIds.has(q.id));
     let fresh = candidates.filter(q => !seen.has(q.id));
     if (!fresh.length) {
-      pool.forEach(q => seen.delete(q.id));  // everything in this pool was seen: start over
-      fresh = candidates;
+      candidates.forEach(q => seen.delete(q.id));  // all seen already: start over
+      fresh = candidates.length ? candidates : pool;
     }
     const question = pickOne(fresh, rng);
+    usedIds.add(question.id);
     usedGroups.add(question.group ?? question.id);
     return question;
   };
 
-  const questionsByLevel = LEVELS.map(level => shuffle([
-    choose(rng() < QUIZ.routeQuestionChance ? routeQuestions(rng) : general),
-    choose(organQuestions(level.id, rng)),
-    choose(withIds(ORGAN_QUESTIONS[level.id], level.id)),
-  ], rng));
+  const questionsByStage = stagePools.map(({ concepts, own }) => {
+    const useGenerated = generated.length && rng() < QUIZ.sequenceQuestionChance;
+    const slots = [
+      useGenerated ? choose(generated, general) : choose(general, generated),
+      choose(concepts, own),
+      choose(own, concepts),
+    ];
+    return shuffle(slots.slice(0, LAYOUT.questionsPerStage), rng);
+  });
 
-  return { questionsByLevel, seen };
+  return { questionsByStage, seen };
 }
 
 /** Questions with random content should not count as "seen". */

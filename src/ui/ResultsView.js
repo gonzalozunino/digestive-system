@@ -1,6 +1,5 @@
 // End-of-game card (win or lose) with the form to save the score.
 import { byId, focusSoon } from "./dom.js";
-import { mascotSvg } from "../assets/mascot.js";
 import { TEXTS } from "../data/texts.js";
 import { RECORDS } from "../data/config.js";
 import { format } from "../utils/text.js";
@@ -24,10 +23,14 @@ export class ResultsView {
     });
   }
 
-  show({ won, score, correct, asked, level }, lastName = "") {
-    this.mascot.innerHTML = mascotSvg(won ? "wow" : "sad");
-    this.title.textContent = won ? TEXTS.winTitle : TEXTS.loseTitle;
-    this.text.textContent = format(won ? TEXTS.winText : TEXTS.loseText, { correct, asked, place: level.name.toLowerCase() });
+  /**
+   * @param summary  "gameOver" event from the game
+   * @param {{character: object, finish: object, lastName: string}} context
+   */
+  show({ won, score, correct, asked, stage, stageNumber }, { character, finish, lastName = "" }) {
+    this.mascot.innerHTML = character.portrait(won ? "wow" : "sad");
+    this.title.textContent = won ? finish.winTitle : TEXTS.loseTitle;
+    this.text.textContent = format(won ? finish.winText : TEXTS.loseText, { correct, asked, number: stageNumber, stage: stage.name });
     this.score.textContent = format(TEXTS.finalScore, { score });
     this.form.hidden = false;
     this.nameInput.value = lastName;
