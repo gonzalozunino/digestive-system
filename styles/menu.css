@@ -1,0 +1,7 @@
+/* Main menu and difficulty selector. */
+.menu-card { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 1.2em; max-width: 46em; }
+.menu-card .stack { gap: 0.7em; }
+
+.segmented { display: inline-flex; padding: 0.2em; border-radius: var(--radius); background: var(--panel); }
+.segmented button { padding: 0.3em 0.9em; border-radius: 0.6em; background: transparent; color: var(--muted); font-weight: 800; }
+.segmented button[aria-pressed="true"] { background: var(--sky); color: var(--ink); }

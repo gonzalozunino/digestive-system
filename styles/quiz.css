@@ -1,0 +1,45 @@
+/* Question card, answer buttons and feedback. */
+.quiz-card { max-width: 50em; padding: 1em 1.3em; }
+.quiz-card__top { display: flex; justify-content: space-between; align-items: center; gap: 0.6em; font-size: 0.95em; font-weight: 800; color: var(--muted); }
+.quiz-card__question { display: grid; grid-template-columns: 7em 1fr; align-items: center; gap: 1em; margin: 0.5em 0 0.8em; }
+
+.bubble { position: relative; padding: 0.7em 1em; border-radius: 1em; background: var(--paper); color: var(--ink); }
+.bubble::before {
+  content: ""; position: absolute; left: -0.7em; top: 50%; margin-top: -0.6em;
+  border: 0.6em solid transparent; border-right-color: var(--paper); border-left: 0;
+}
+.bubble__say { font-size: 0.9em; font-weight: 800; color: var(--accent-say); }
+.bubble__prompt { font-size: 1.45em; font-weight: 800; line-height: 1.15; text-wrap: balance; }
+
+.answers { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6em; }
+.answer {
+  --face: var(--answer-1); --edge: var(--answer-1-shadow);
+  display: flex; align-items: center; gap: 0.6em; min-height: 3.1em; padding: 0.55em 0.8em; border-radius: var(--radius);
+  background: var(--face); box-shadow: 0 0.25em 0 var(--edge); color: var(--ink);
+  font-size: 1.12em; font-weight: 700; line-height: 1.1; text-align: left; transition: transform 0.08s, filter 0.2s;
+}
+.answer--2 { --face: var(--answer-2); --edge: var(--answer-2-shadow); }
+.answer--3 { --face: var(--answer-3); --edge: var(--answer-3-shadow); }
+.answer--4 { --face: var(--answer-4); --edge: var(--answer-4-shadow); }
+.answer:hover:not(:disabled) { transform: translateY(-2px); }
+.answer:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0.05em 0 var(--edge); }
+.answer:disabled { cursor: default; }
+.answer--right { --face: var(--ok); --edge: var(--ok-shadow); animation: pulse 0.5s; }
+.answer--wrong { --face: var(--bad); --edge: var(--bad-shadow); animation: shake 0.4s; }
+.answer--dimmed { filter: grayscale(0.8) brightness(0.6); }
+.answer__key {
+  display: grid; place-items: center; flex: none; width: 1.7em; height: 1.7em; border-radius: 0.5em;
+  background: rgba(27, 15, 46, 0.85); color: var(--paper); font-size: 0.9em;
+}
+@keyframes pulse { 50% { transform: scale(1.05); } }
+@keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+.feedback {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.8em;
+  margin-top: 0.8em; padding: 0.6em 0.9em; border-radius: 0.9em; background: var(--panel);
+}
+.feedback__title { font-size: 1.25em; font-weight: 800; }
+.feedback__text { color: var(--soft-text); }
+.feedback__points { color: var(--sun); }
+.feedback__streak { color: var(--pink); }
+.feedback__answer { color: var(--ok); }

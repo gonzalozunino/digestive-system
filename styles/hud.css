@@ -1,0 +1,24 @@
+/* Heads-up display shown while playing. */
+.hud { position: absolute; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: center; gap: 0.8em; padding: 0.6em 0.9em; pointer-events: none; }
+.hud__pill {
+  padding: 0.15em 0.8em; border: 2px solid rgba(255, 255, 255, 0.18); border-radius: 999px;
+  background: rgba(18, 8, 31, 0.72); font-size: 1.05em; font-weight: 800; white-space: nowrap; letter-spacing: 0.05em;
+}
+.hud__pill--level { color: var(--lime); letter-spacing: 0; }
+.hud__pill--score { color: var(--sun); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+.hud__progress {
+  --progress: 0; position: relative; flex: 1; min-width: 4em; height: 0.8em;
+  border: 2px solid rgba(255, 255, 255, 0.18); border-radius: 999px; background: rgba(18, 8, 31, 0.72);
+}
+.hud__progress-fill {
+  position: absolute; top: 0; bottom: 0; left: 0; width: calc(var(--progress) * 100%);
+  border-radius: 999px; background: linear-gradient(90deg, var(--sky), var(--lime));
+}
+.hud__progress-dot {
+  position: absolute; top: 50%; left: calc(var(--progress) * 100%); width: 1.3em; height: 1.3em; margin: -0.65em 0 0 -0.65em;
+  border: 2px solid #7a4a1d; border-radius: 50%; background: #f3c37a;
+}
+.hud__button {
+  display: grid; place-items: center; width: 2.2em; height: 2.2em; border: 2px solid rgba(255, 255, 255, 0.25); border-radius: 50%;
+  background: rgba(18, 8, 31, 0.72); font-size: 1em; pointer-events: auto;
+}

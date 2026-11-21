@@ -1,1165 +1,149 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>El Viaje de Bolo</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap">
-<style>
-/* Layout: one 16:9 stage scaled to fit; canvas game below, HTML overlays on top. Single dark arcade look. */
-:root{
-  --ink:#1b0f2e; --night:#12081f; --paper:#fff7ee;
-  --pink:#ff5d8f; --lime:#b6f05a; --sun:#ffc93c; --sky:#46c8ff; --grape:#8b5cf6;
-  --ok:#3ddc84; --bad:#ff4d5e;
-  --display:"Baloo 2", "Trebuchet MS", "Comic Sans MS", system-ui, sans-serif;
-  color-scheme: dark;
-}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0}
-body{background:var(--night);color:var(--paper);font-family:var(--display);overflow:hidden;
-  display:flex;align-items:center;justify-content:center;touch-action:manipulation;
-  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
-  padding-left:max(0px, env(safe-area-inset-left, 0px));padding-right:max(0px, env(safe-area-inset-right, 0px))}
-#stage{position:relative;width:960px;height:540px;font-size:16px;overflow:hidden;border-radius:.6em;
-  box-shadow:0 0 0 3px #2d1a4a, 0 1.5em 4em rgba(0,0,0,.6)}
-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-#fx{pointer-events:none;z-index:30}
-button{font-family:inherit;cursor:pointer;border:0;color:inherit}
-button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
-
-/* HUD */
-#hud{position:absolute;left:0;right:0;top:0;z-index:10;display:flex;align-items:center;gap:.8em;padding:.6em .9em;pointer-events:none}
-#hud[hidden]{display:none}
-.pill{background:rgba(18,8,31,.72);border:2px solid rgba(255,255,255,.18);border-radius:999px;padding:.15em .8em;font-weight:800;font-size:1.05em;white-space:nowrap}
-#hearts{letter-spacing:.05em}
-#score{font-variant-numeric:tabular-nums;color:var(--sun)}
-#lvlname{color:var(--lime)}
-#prog{flex:1;height:.8em;background:rgba(18,8,31,.72);border:2px solid rgba(255,255,255,.18);border-radius:999px;position:relative;overflow:visible;min-width:4em}
-#progfill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--sky),var(--lime));border-radius:999px}
-#progdot{position:absolute;top:50%;width:1.3em;height:1.3em;margin:-.65em 0 0 -.65em;border-radius:50%;background:#f3c37a;border:2px solid #7a4a1d;left:0}
-.hudbtn{pointer-events:auto;width:2.2em;height:2.2em;border-radius:50%;background:rgba(18,8,31,.72);border:2px solid rgba(255,255,255,.25);font-size:1em;display:grid;place-items:center}
-
-/* Screens */
-.screen{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:1.2em;
-  background:radial-gradient(ellipse at center, rgba(27,15,46,.55), rgba(18,8,31,.92))}
-.screen[hidden]{display:none}
-.card{background:var(--ink);border:3px solid #3b2563;border-radius:1.2em;padding:1.2em 1.5em;max-width:44em;width:100%;
-  box-shadow:0 .4em 0 #0b0514, 0 1em 3em rgba(0,0,0,.5);animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
-@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
-h1{font-size:3.6em;line-height:.95;margin:0;letter-spacing:-.01em;text-wrap:balance;
-  background:linear-gradient(180deg,var(--sun),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 .08em 0 #4a1530)}
-h2{font-size:2em;line-height:1.05;margin:0;text-wrap:balance}
-p{margin:0;line-height:1.35}
-.big{font-size:1.35em;font-weight:800;padding:.45em 1.4em;border-radius:.8em;background:var(--lime);color:var(--ink);
-  box-shadow:0 .25em 0 #5e8f1f;transition:transform .08s}
-.big:hover{transform:translateY(-2px)}
-.big:active{transform:translateY(3px);box-shadow:0 .05em 0 #5e8f1f}
-.ghost{font-size:1.05em;font-weight:700;padding:.4em 1em;border-radius:.8em;background:#2d1a4a;box-shadow:0 .2em 0 #150a26}
-.row{display:flex;gap:.7em;align-items:center;flex-wrap:wrap}
-.center{text-align:center;justify-content:center}
-.muted{color:#c9b8e8}
-.kbd{display:inline-block;background:#2d1a4a;border-radius:.35em;padding:0 .4em;font-weight:800;border-bottom:3px solid #150a26}
-
-/* Menu */
-#menu .card{display:grid;grid-template-columns:auto 1fr;gap:1.2em;align-items:center;max-width:46em}
-.mascot{width:9em;height:9em;flex:none}
-.mascot.bounce{animation:bob 1.2s ease-in-out infinite}
-@keyframes bob{50%{transform:translateY(-.4em) rotate(-4deg)}}
-.seg{display:inline-flex;background:#2d1a4a;border-radius:.8em;padding:.2em}
-.seg button{padding:.3em .9em;border-radius:.6em;font-weight:800;background:transparent;color:#c9b8e8}
-.seg button[aria-pressed="true"]{background:var(--sky);color:var(--ink)}
-
-/* Quiz */
-#quiz .card{max-width:50em;padding:1em 1.3em}
-.qtop{display:flex;justify-content:space-between;align-items:center;gap:.6em;font-weight:800;color:#c9b8e8;font-size:.95em}
-.qbody{display:grid;grid-template-columns:7em 1fr;gap:1em;align-items:center;margin:.5em 0 .8em}
-.qbody .mascot{width:7em;height:7em}
-.bubble{position:relative;background:var(--paper);color:var(--ink);border-radius:1em;padding:.7em 1em}
-.bubble:before{content:"";position:absolute;left:-.7em;top:50%;margin-top:-.6em;border:.6em solid transparent;border-right-color:var(--paper);border-left:0}
-.bubble .say{font-size:.9em;color:#7a4fc4;font-weight:800}
-.bubble .q{font-size:1.45em;font-weight:800;line-height:1.15;text-wrap:balance}
-.answers{display:grid;grid-template-columns:1fr 1fr;gap:.6em}
-.ans{display:flex;align-items:center;gap:.6em;text-align:left;padding:.55em .8em;border-radius:.8em;font-size:1.12em;font-weight:700;
-  background:var(--c);color:var(--ink);box-shadow:0 .25em 0 var(--d);transition:transform .08s, filter .2s;min-height:3.1em;line-height:1.1}
-.ans:hover:not(:disabled){transform:translateY(-2px)}
-.ans:active:not(:disabled){transform:translateY(3px);box-shadow:0 .05em 0 var(--d)}
-.ans b{flex:none;width:1.7em;height:1.7em;border-radius:.5em;background:rgba(27,15,46,.85);color:var(--paper);display:grid;place-items:center;font-size:.9em}
-.ans:disabled{cursor:default}
-.ans.dim{filter:grayscale(.8) brightness(.6)}
-.ans.right{background:var(--ok)!important;box-shadow:0 .25em 0 #1d8a4f!important;animation:pulse .5s}
-.ans.wrong{background:var(--bad)!important;box-shadow:0 .25em 0 #a1222f!important;animation:shake .4s}
-@keyframes pulse{50%{transform:scale(1.05)}}
-@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-#feedback{margin-top:.8em;display:grid;grid-template-columns:1fr auto;gap:.8em;align-items:center;background:#2d1a4a;border-radius:.9em;padding:.6em .9em}
-#feedback[hidden]{display:none}
-#fbtitle{font-size:1.25em;font-weight:800}
-#fbtext{font-size:1em;color:#e9defc}
-
-/* Level card */
-.organ{font-size:4.5em;line-height:1}
-.chip{display:inline-block;background:#2d1a4a;border-radius:999px;padding:.15em .8em;font-weight:800;color:var(--sun)}
-
-/* Records */
-table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:1.05em}
-td,th{padding:.25em .5em;text-align:left}
-th{color:#c9b8e8;font-size:.85em;text-transform:uppercase;letter-spacing:.06em}
-tr:nth-child(even) td{background:rgba(255,255,255,.04)}
-tr.me td{background:rgba(182,240,90,.18)}
-td.num{text-align:right}
-input[type=text]{font-family:inherit;font-size:1.2em;font-weight:700;padding:.35em .7em;border-radius:.7em;border:3px solid #3b2563;background:var(--paper);color:var(--ink);width:12em;max-width:100%}
-.scroll{max-height:15em;overflow:auto}
-
-#rotate{display:none}
-@media (orientation:portrait) and (max-width:700px){
-  #rotate{display:block;position:fixed;bottom:max(1em, env(safe-area-inset-bottom, 0px));left:0;right:0;text-align:center;color:#c9b8e8;font-size:1em;padding:0 1em}
-}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>El Viaje de Bolo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap">
+  <link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-<div id="stage">
-  <canvas id="c" width="960" height="540" aria-label="Juego: El Viaje de Bolo"></canvas>
+  <div id="stage" class="stage">
+    <canvas id="game-canvas" class="stage__layer" aria-label="Juego: El Viaje de Bolo"></canvas>
 
-  <div id="hud" hidden>
-    <span class="pill" id="hearts">❤️❤️❤️</span>
-    <span class="pill" id="lvlname">👄 Boca</span>
-    <div id="prog"><div id="progfill"></div><div id="progdot"></div></div>
-    <span class="pill" id="score">0</span>
-    <button class="hudbtn" id="pauseBtn" aria-label="Pausa">⏸</button>
-    <button class="hudbtn" id="muteBtn" aria-label="Sonido">🔊</button>
-  </div>
+    <!-- HUD -->
+    <header id="hud" class="hud" hidden>
+      <span id="hud-hearts" class="hud__pill"></span>
+      <span id="hud-level" class="hud__pill hud__pill--level"></span>
+      <div id="hud-progress" class="hud__progress" aria-hidden="true">
+        <div class="hud__progress-fill"></div>
+        <div class="hud__progress-dot"></div>
+      </div>
+      <span id="hud-score" class="hud__pill hud__pill--score"></span>
+      <button id="hud-pause" class="hud__button" aria-label="Pausa">⏸</button>
+      <button id="hud-mute" class="hud__button" aria-label="Sonido">🔊</button>
+    </header>
 
-  <!-- MENU -->
-  <div class="screen" id="menu">
-    <div class="card">
-      <div class="mascot bounce" id="menuMascot"></div>
-      <div style="display:grid;gap:.7em">
-        <h1>El Viaje<br>de Bolo</h1>
-        <p class="muted" style="font-size:1.1em">Eres <b style="color:var(--sun)">Bolo</b>, un bocado de comida. Viaja por todo el sistema digestivo: salta obstáculos, junta jugos digestivos y responde las preguntas de los portales <b style="color:var(--sky)">?</b></p>
-        <div class="row">
-          <span class="muted" style="font-weight:700">Dificultad:</span>
-          <div class="seg" role="group" aria-label="Dificultad">
-            <button id="dEasy" aria-pressed="true">Fácil</button>
-            <button id="dNormal" aria-pressed="false">Normal</button>
+    <!-- MENU -->
+    <section id="menu" class="screen">
+      <div class="card menu-card">
+        <div id="menu-mascot" class="mascot mascot--large mascot--bouncing"></div>
+        <div class="stack">
+          <h1 class="title">El Viaje<br>de Bolo</h1>
+          <p class="lead">Eres <b class="highlight">Bolo</b>, un bocado de comida. Viaja por todo el sistema digestivo: salta obstáculos, junta jugos digestivos y responde las preguntas de los portales <b class="highlight highlight--portal">?</b></p>
+          <div class="row">
+            <span class="label">Dificultad:</span>
+            <div class="segmented" role="group" aria-label="Dificultad">
+              <button data-difficulty="easy" aria-pressed="true">Fácil</button>
+              <button data-difficulty="normal" aria-pressed="false">Normal</button>
+            </div>
+          </div>
+          <div class="row">
+            <button id="menu-play" class="btn btn--primary">▶ Jugar</button>
+            <button id="menu-records" class="btn btn--secondary">🏆 Récords</button>
+            <button id="menu-help" class="btn btn--secondary">❓ Cómo jugar</button>
           </div>
         </div>
-        <div class="row">
-          <button class="big" id="playBtn">▶ Jugar</button>
-          <button class="ghost" id="recBtn">🏆 Récords</button>
-          <button class="ghost" id="helpBtn">❓ Cómo jugar</button>
+      </div>
+    </section>
+
+    <!-- HELP -->
+    <section id="help" class="screen" hidden>
+      <div class="card card--narrow stack">
+        <h2>Cómo jugar</h2>
+        <p>🦘 <b>Saltar:</b> toca la pantalla, haz clic o pulsa <kbd>Espacio</kbd> / <kbd>↑</kbd>. Mantén pulsado para saltar seguido.</p>
+        <p>🦷 <b>Esquiva</b> los pinchos y cajas. Si chocas pierdes un corazón ❤️.</p>
+        <p>💧 <b>Junta jugos digestivos</b> (saliva, jugo gástrico, bilis…): te ayudan a digerirte y dan puntos. Los ❤️ corazones te devuelven una vida.</p>
+        <p>❓ <b>Portales:</b> responde la pregunta (puedes usar las teclas <kbd>1</kbd>–<kbd>4</kbd>). Si aciertas ganas muchos puntos y las rachas dan bonus. Si fallas, pierdes un corazón.</p>
+        <p>🚪 Cruza los 5 órganos: boca, esófago, estómago, intestino delgado e intestino grueso.</p>
+        <div class="row"><button class="btn btn--primary" data-back>¡Entendido!</button></div>
+      </div>
+    </section>
+
+    <!-- LEVEL INTRO -->
+    <section id="level-intro" class="screen" hidden>
+      <div class="card level-card">
+        <span id="intro-step" class="chip"></span>
+        <div id="intro-emoji" class="level-card__emoji"></div>
+        <h2 id="intro-name"></h2>
+        <p id="intro-text" class="level-card__text"></p>
+        <p id="intro-form" class="muted"></p>
+        <p id="intro-collect" class="level-card__collect"></p>
+        <button id="intro-start" class="btn btn--primary">¡Vamos! 🚀</button>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section id="quiz" class="screen" hidden>
+      <div class="card quiz-card">
+        <div class="quiz-card__top"><span id="quiz-counter"></span><span id="quiz-streak"></span></div>
+        <div class="quiz-card__question">
+          <div id="quiz-mascot" class="mascot"></div>
+          <div class="bubble">
+            <div id="quiz-say" class="bubble__say"></div>
+            <div id="quiz-prompt" class="bubble__prompt"></div>
+          </div>
+        </div>
+        <div id="quiz-answers" class="answers"></div>
+        <div id="quiz-feedback" class="feedback" hidden>
+          <div>
+            <div id="quiz-feedback-title" class="feedback__title"></div>
+            <div id="quiz-feedback-text" class="feedback__text"></div>
+          </div>
+          <button id="quiz-continue" class="btn btn--primary">Seguir ▶</button>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- HELP -->
-  <div class="screen" id="help" hidden>
-    <div class="card" style="display:grid;gap:.8em;max-width:36em">
-      <h2>Cómo jugar</h2>
-      <p>🦘 <b>Saltar:</b> toca la pantalla, haz clic o pulsa <span class="kbd">Espacio</span> / <span class="kbd">↑</span>. Mantén pulsado para saltar seguido.</p>
-      <p>🦷 <b>Esquiva</b> los pinchos y cajas. Si chocas pierdes un corazón ❤️.</p>
-      <p>💧 <b>Junta jugos digestivos</b> (saliva, jugo gástrico, bilis…): te ayudan a digerirte y dan puntos. Los ❤️ corazones te devuelven una vida.</p>
-      <p>❓ <b>Portales:</b> responde la pregunta (puedes usar las teclas <span class="kbd">1</span>–<span class="kbd">4</span>). Si aciertas ganas muchos puntos y las rachas dan bonus. Si fallas, pierdes un corazón.</p>
-      <p>🚪 Cruza los 5 órganos: boca, esófago, estómago, intestino delgado e intestino grueso.</p>
-      <div class="row"><button class="big" data-back>¡Entendido!</button></div>
-    </div>
-  </div>
-
-  <!-- LEVEL CARD -->
-  <div class="screen" id="levelcard" hidden>
-    <div class="card" style="display:grid;gap:.7em;max-width:34em;text-align:center;justify-items:center">
-      <span class="chip" id="lcStep">Parada 1 de 5</span>
-      <div class="organ" id="lcEmoji">👄</div>
-      <h2 id="lcName">La Boca</h2>
-      <p id="lcText" style="font-size:1.1em"></p>
-      <p class="muted" id="lcForm"></p>
-      <p id="lcCollect" style="color:var(--sky);font-weight:700"></p>
-      <button class="big" id="goBtn">¡Vamos! 🚀</button>
-    </div>
-  </div>
-
-  <!-- QUIZ -->
-  <div class="screen" id="quiz" hidden>
-    <div class="card">
-      <div class="qtop"><span id="qcount">Pregunta 1 de 15</span><span id="qstreak"></span></div>
-      <div class="qbody">
-        <div class="mascot" id="quizMascot"></div>
-        <div class="bubble"><div class="say" id="qsay">¡Tú puedes!</div><div class="q" id="qtext"></div></div>
+    <!-- PAUSE -->
+    <section id="pause" class="screen" hidden>
+      <div class="card card--small stack stack--centered">
+        <h2>Pausa</h2>
+        <button id="pause-resume" class="btn btn--primary">▶ Seguir</button>
+        <button id="pause-quit" class="btn btn--secondary">Salir al menú</button>
       </div>
-      <div class="answers" id="answers"></div>
-      <div id="feedback" hidden>
-        <div><div id="fbtitle"></div><div id="fbtext"></div></div>
-        <button class="big" id="contBtn">Seguir ▶</button>
-      </div>
-    </div>
-  </div>
+    </section>
 
-  <!-- PAUSE -->
-  <div class="screen" id="pause" hidden>
-    <div class="card" style="display:grid;gap:.8em;max-width:24em;text-align:center;justify-items:center">
-      <h2>Pausa</h2>
-      <button class="big" id="resumeBtn">▶ Seguir</button>
-      <button class="ghost" id="quitBtn">Salir al menú</button>
-    </div>
-  </div>
-
-  <!-- GAME OVER / WIN -->
-  <div class="screen" id="over" hidden>
-    <div class="card" style="display:grid;grid-template-columns:auto 1fr;gap:1.2em;align-items:center;max-width:44em">
-      <div class="mascot" id="overMascot"></div>
-      <div style="display:grid;gap:.6em">
-        <h2 id="overTitle">¡Fin del viaje!</h2>
-        <p id="overText"></p>
-        <p style="font-size:1.6em;font-weight:800;color:var(--sun)" id="overScore"></p>
-        <form id="saveForm" class="row" autocomplete="off">
-          <label for="nameIn" class="muted" style="font-weight:700">Tu nombre:</label>
-          <input type="text" id="nameIn" maxlength="12" placeholder="Escribe tu nombre">
-          <button class="big" type="submit" style="font-size:1.1em">Guardar</button>
-        </form>
-        <div class="row">
-          <button class="big" id="againBtn">🔁 Otra vez</button>
-          <button class="ghost" id="menuBtn">Menú</button>
+    <!-- RESULTS -->
+    <section id="results" class="screen" hidden>
+      <div class="card results-card">
+        <div id="results-mascot" class="mascot mascot--large"></div>
+        <div class="stack stack--tight">
+          <h2 id="results-title"></h2>
+          <p id="results-text"></p>
+          <p id="results-score" class="results-card__score"></p>
+          <form id="results-form" class="row" autocomplete="off">
+            <label for="results-name" class="label">Tu nombre:</label>
+            <input type="text" id="results-name" class="text-input" placeholder="Escribe tu nombre">
+            <button type="submit" class="btn btn--primary btn--small">Guardar</button>
+          </form>
+          <div class="row">
+            <button id="results-again" class="btn btn--primary">🔁 Otra vez</button>
+            <button id="results-menu" class="btn btn--secondary">Menú</button>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- RECORDS -->
+    <section id="records" class="screen" hidden>
+      <div class="card card--medium stack">
+        <h2>🏆 Récords</h2>
+        <div class="records__scroll">
+          <table class="records">
+            <thead><tr><th>#</th><th>Nombre</th><th>Llegó a</th><th class="records__number">Puntos</th></tr></thead>
+            <tbody id="records-body"></tbody>
+          </table>
+        </div>
+        <div class="row"><button class="btn btn--primary" data-back>Volver</button></div>
+      </div>
+    </section>
+
+    <canvas id="fx-canvas" class="stage__layer stage__layer--fx" aria-hidden="true"></canvas>
   </div>
+  <p class="rotate-hint">📱 Gira el dispositivo para jugar en grande</p>
 
-  <!-- RECORDS -->
-  <div class="screen" id="records" hidden>
-    <div class="card" style="display:grid;gap:.8em;max-width:30em">
-      <h2>🏆 Récords</h2>
-      <div class="scroll"><table><thead><tr><th>#</th><th>Nombre</th><th>Llegó a</th><th class="num">Puntos</th></tr></thead><tbody id="recBody"></tbody></table></div>
-      <div class="row"><button class="big" data-back>Volver</button></div>
-    </div>
-  </div>
-
-  <canvas id="fx" width="960" height="540"></canvas>
-</div>
-<div id="rotate">📱 Gira el dispositivo para jugar en grande</div>
-
-<script>
-"use strict";
-/* ================= DATA ================= */
-const LEVELS = [
-  { key:"boca", name:"La Boca", short:"Boca", emoji:"👄",
-    text:"Aquí empieza la digestión: los dientes trituran la comida y la saliva la ablanda. ¡Esquiva los dientes!",
-    form:"Ahora eres: un bocado de comida que se convierte en bolo alimenticio.",
-    collect:{name:"saliva", colors:["#9fe3ff"], text:"Junta 💧 gotas de saliva: ablandan la comida y empiezan a digerir el almidón del pan y el arroz."},
-    bgTop:"#5a0f2a", bgBot:"#a3244b", ground:"#e35d7f", groundTop:"#ff9ab3", spike:"#fffaf0", spikeEdge:"#d9cbb4", block:"#f4e9d8", blockEdge:"#bfa98a", player:"#f3c37a", music:{root:57,bpm:126} },
-  { key:"esofago", name:"El Esófago", short:"Esófago", emoji:"🌀",
-    text:"Un tubo de unos 25 cm. Sus músculos te empujan hacia abajo con movimientos peristálticos.",
-    form:"Ahora eres: el bolo alimenticio, deslizándote hacia el estómago.",
-    collect:{name:"moco", colors:["#d6f5a0"], text:"Junta 💧 gotas de moco: cubren el esófago para que resbales más fácil hacia abajo."},
-    bgTop:"#5c2306", bgBot:"#b4521b", ground:"#d9783a", groundTop:"#ffb27a", spike:"#ffd9a8", spikeEdge:"#c98745", block:"#8a3a12", blockEdge:"#ffb27a", player:"#e9b36a", music:{root:55,bpm:132} },
-  { key:"estomago", name:"El Estómago", short:"Estómago", emoji:"🧪",
-    text:"¡Cuidado con el ácido! El jugo gástrico mezcla y deshace la comida durante horas.",
-    form:"Ahora eres: quimo, una papilla espesa y ácida.",
-    collect:{name:"jugo gástrico", colors:["#e8ff3a"], text:"Junta 💧 gotas de jugo gástrico: su ácido y sus enzimas deshacen las proteínas."},
-    bgTop:"#1d3a0c", bgBot:"#4f7d14", ground:"#9acd32", groundTop:"#e4ff7a", spike:"#d8ff3a", spikeEdge:"#7aa312", block:"#3d5f10", blockEdge:"#c7f25a", player:"#c9d36b", music:{root:52,bpm:138} },
-  { key:"delgado", name:"El Intestino Delgado", short:"Int. delgado", emoji:"🪱",
-    text:"¡Unos 6 metros de curvas! Aquí los nutrientes pasan a la sangre gracias a las vellosidades.",
-    form:"Ahora eres: quilo, un líquido lleno de nutrientes.",
-    collect:{name:"bilis", name2:"jugo pancreático", colors:["#8fd14f","#ffa54a"], text:"Junta 💧 bilis (verde, del hígado) y jugo pancreático (naranja, del páncreas): terminan de digerir todo."},
-    bgTop:"#3a0f4f", bgBot:"#7d2f8f", ground:"#c45bd6", groundTop:"#f3a6ff", spike:"#ffc2f3", spikeEdge:"#b45fb0", block:"#5a1f6e", blockEdge:"#f3a6ff", player:"#f0d9a0", music:{root:54,bpm:144} },
-  { key:"grueso", name:"El Intestino Grueso", short:"Int. grueso", emoji:"🦠",
-    text:"Última parada: aquí se absorbe el agua y las bacterias buenas ayudan. ¡Prepárate para la salida!",
-    form:"Ahora eres: restos que no sirven… ¡futuras heces! 💩",
-    collect:{name:"bacterias buenas", bacteria:true, colors:["#7ed957","#6fc3ff","#ff9ecb"], text:"Junta 🦠 bacterias buenas: ayudan a digerir la fibra y fabrican algunas vitaminas."},
-    bgTop:"#2e1a0b", bgBot:"#6b4320", ground:"#9b6a3c", groundTop:"#e0ac74", spike:"#f5d0a0", spikeEdge:"#a8743f", block:"#4a2c12", blockEdge:"#e0ac74", player:"#a8743f", music:{root:50,bpm:150} },
-];
-
-// q: question, a: [correct, wrong, wrong, wrong], e: explanation
-const QUESTIONS = {
-  boca: [
-    {q:"¿Dónde comienza la digestión?", a:["En la boca","En el estómago","En el intestino delgado","En el esófago"], e:"En la boca los dientes trituran la comida y la saliva empieza a digerirla."},
-    {g:"salivales", q:"¿Qué líquido se produce en la boca y ablanda la comida?", a:["La saliva","La bilis","El jugo gástrico","La sangre"], e:"Las glándulas salivales fabrican saliva: ¡más de un litro al día!"},
-    {q:"¿Cómo se llama la mezcla de comida y saliva que tragamos?", a:["Bolo alimenticio","Quimo","Quilo","Heces"], e:"Se llama bolo alimenticio. ¡Por eso nuestro héroe se llama Bolo!"},
-    {q:"¿Qué dientes usamos para cortar los alimentos?", a:["Los incisivos","Los molares","Los premolares","Las encías"], e:"Los incisivos son los dientes de adelante, planos y afilados como tijeras."},
-    {q:"¿Qué dientes trituran y muelen la comida?", a:["Los molares","Los incisivos","Los caninos","La lengua"], e:"Los molares están al fondo y son anchos, perfectos para moler."},
-    {g:"lengua", q:"¿Qué parte de la boca mueve la comida y nos deja sentir los sabores?", a:["La lengua","El paladar","Los labios","La úvula"], e:"La lengua es un músculo con papilas gustativas que detectan los sabores."},
-    {q:"¿Cuántos dientes tiene normalmente una persona adulta?", a:["32","20","12","50"], e:"Los adultos tienen 32 dientes. Los niños tienen 20 dientes de leche."},
-    {q:"La saliva empieza a digerir un tipo de alimento. ¿Cuál?", a:["Los almidones, como el pan o el arroz","Las grasas","Las vitaminas","El agua"], e:"La saliva tiene una enzima llamada amilasa que empieza a romper los almidones."},
-  ],
-  esofago: [
-    {g:"esofago", q:"¿Qué tubo lleva la comida de la boca al estómago?", a:["El esófago","La tráquea","El intestino grueso","La vena"], e:"El esófago es un tubo muscular. La tráquea lleva el aire a los pulmones."},
-    {g:"esofago", q:"¿Cómo se llaman los movimientos que empujan la comida por el esófago?", a:["Movimientos peristálticos","Latidos","Respiración","Masticación"], e:"Son contracciones en forma de ola que empujan el bolo hacia abajo."},
-    {g:"epiglotis", q:"¿Qué \"tapita\" evita que la comida se vaya a los pulmones al tragar?", a:["La epiglotis","La úvula","Las amígdalas","El diafragma"], e:"La epiglotis tapa la tráquea cuando tragamos. Si falla, ¡tosemos!"},
-    {q:"¿Podrías tragar comida estando de cabeza?", a:["Sí, los músculos del esófago la empujan","No, la gravedad lo impide","Solo los líquidos","Solo si masticas mucho"], e:"¡Sí! Por eso los astronautas pueden comer en el espacio sin gravedad."},
-    {q:"¿Cuánto mide más o menos el esófago de un adulto?", a:["Unos 25 cm","Unos 2 cm","Unos 2 metros","Unos 10 metros"], e:"Mide unos 25 centímetros, más o menos lo que una regla escolar larga."},
-    {g:"faringe", q:"Al tragar, ¿por dónde pasa la comida justo antes del esófago?", a:["Por la faringe","Por el estómago","Por el hígado","Por el páncreas"], e:"La faringe (la garganta) es un cruce compartido entre la comida y el aire."},
-    {q:"¿Cuánto tarda la comida en bajar por el esófago?", a:["Unos pocos segundos","Una hora","Un día","Una semana"], e:"Solo tarda unos 5 a 10 segundos en llegar al estómago."},
-    {q:"¿Qué hay al final del esófago para que la comida no vuelva a subir?", a:["Un anillo de músculo (cardias)","Un diente","Un hueso","Una vellosidad"], e:"El cardias es un anillo muscular que se abre para dejar pasar la comida y luego se cierra."},
-  ],
-  estomago: [
-    {g:"estomago", q:"¿Qué jugo produce el estómago para digerir?", a:["Jugo gástrico","Saliva","Bilis","Jugo de naranja"], e:"El jugo gástrico contiene ácido y enzimas que deshacen la comida."},
-    {g:"estomago", q:"¿Cómo se llama la papilla que se forma en el estómago?", a:["Quimo","Bolo","Quilo","Heces"], e:"El bolo se mezcla con el jugo gástrico y se convierte en quimo."},
-    {q:"El jugo gástrico tiene un ácido muy fuerte. ¿Cuál es?", a:["Ácido clorhídrico","Ácido cítrico","Vinagre","Ácido de batería"], e:"El ácido clorhídrico también mata muchos microbios que vienen con la comida."},
-    {q:"¿Por qué el estómago no se digiere a sí mismo?", a:["Lo protege una capa de moco","Está hecho de metal","No tiene ácido","Porque siempre está vacío"], e:"Una capa de moco cubre sus paredes y lo protege del ácido."},
-    {q:"¿Qué forma tiene el estómago?", a:["De bolsa, parecida a una letra J","De tubo recto","De estrella","Cuadrada"], e:"Es una bolsa elástica en forma de J que se estira cuando comemos."},
-    {q:"¿Cuánto tiempo se queda la comida en el estómago, aproximadamente?", a:["De 2 a 4 horas","5 segundos","3 días","1 minuto"], e:"Pasa unas horas siendo mezclada y batida, según lo que hayas comido."},
-    {q:"¿Qué nutrientes empiezan a digerirse en el estómago?", a:["Las proteínas","Los azúcares","Las vitaminas","El agua"], e:"Una enzima del estómago, la pepsina, empieza a romper las proteínas de la carne, el huevo o la leche."},
-    {q:"¿Qué válvula separa el estómago del intestino delgado?", a:["El píloro","El cardias","La epiglotis","La úvula"], e:"El píloro deja pasar el quimo poco a poco hacia el intestino delgado."},
-  ],
-  delgado: [
-    {g:"delgado", q:"¿En qué órgano se absorben la mayoría de los nutrientes?", a:["En el intestino delgado","En el estómago","En la boca","En el esófago"], e:"En el intestino delgado los nutrientes pasan a la sangre."},
-    {q:"¿Cuánto mide aproximadamente el intestino delgado de un adulto?", a:["Unos 6 o 7 metros","Unos 50 cm","Unos 100 metros","Unos 20 cm"], e:"¡Mide unos 6 o 7 metros! Está todo enrollado dentro de la barriga."},
-    {q:"¿Cómo se llaman los \"deditos\" del intestino delgado que absorben nutrientes?", a:["Vellosidades intestinales","Papilas gustativas","Alvéolos","Neuronas"], e:"Millones de vellosidades aumentan la superficie para absorber más nutrientes."},
-    {g:"higado", q:"¿Qué órgano fabrica la bilis, que ayuda a digerir las grasas?", a:["El hígado","El páncreas","El riñón","El corazón"], e:"El hígado fabrica la bilis. Es la glándula más grande del cuerpo."},
-    {g:"vesicula", q:"¿Dónde se guarda la bilis hasta que se necesita?", a:["En la vesícula biliar","En la vejiga","En el estómago","En el apéndice"], e:"La vesícula biliar es una bolsita debajo del hígado que guarda la bilis."},
-    {g:"pancreas", q:"¿Qué glándula produce el jugo pancreático?", a:["El páncreas","El hígado","La tiroides","El bazo"], e:"El jugo pancreático llega al intestino delgado y ayuda a digerir casi todo."},
-    {q:"¿Cuál es la primera parte del intestino delgado?", a:["El duodeno","El colon","El recto","El ciego"], e:"El duodeno es donde llegan la bilis y el jugo pancreático."},
-    {q:"Después de absorberse, ¿a dónde van los nutrientes?", a:["A la sangre","A los pulmones","Al pelo","A la saliva"], e:"La sangre reparte los nutrientes por todo el cuerpo para darnos energía."},
-  ],
-  grueso: [
-    {g:"grueso", q:"¿Qué absorbe principalmente el intestino grueso?", a:["Agua","Proteínas","Grasas","Oxígeno"], e:"El intestino grueso recupera el agua y así las heces se vuelven más sólidas."},
-    {g:"ano", q:"¿Por dónde salen las heces del cuerpo?", a:["Por el ano","Por la boca","Por el píloro","Por el duodeno"], e:"El ano es el final del tubo digestivo. ¡Fin del viaje!"},
-    {q:"¿Qué seres vivos viven en el intestino grueso y nos ayudan?", a:["Bacterias buenas (microbiota)","Peces","Gusanos de seda","Ninguno"], e:"Billones de bacterias buenas nos ayudan a digerir y a fabricar algunas vitaminas."},
-    {q:"¿Qué alimentos ayudan a que el intestino funcione bien?", a:["Los que tienen fibra: frutas y verduras","Las golosinas","Los refrescos","Las papas fritas"], e:"La fibra ayuda a que los restos avancen bien por el intestino."},
-    {q:"¿Cómo se llaman los desechos que expulsamos?", a:["Heces","Quimo","Bilis","Saliva"], e:"Las heces son los restos que el cuerpo no pudo aprovechar."},
-    {q:"¿Qué pequeño órgano con forma de dedo está al inicio del intestino grueso?", a:["El apéndice","La amígdala","La úvula","La vesícula"], e:"El apéndice está conectado al principio del intestino grueso."},
-    {q:"¿Qué intestino es más largo?", a:["El delgado","El grueso","Miden igual","Ninguno, son del mismo tamaño que el esófago"], e:"¡Sorpresa! El delgado mide unos 6 m y el grueso solo 1,5 m, pero es más ancho."},
-    {q:"¿Por qué es importante tomar agua?", a:["Ayuda a la digestión y evita el estreñimiento","Hace crecer el pelo","No sirve para nada","Para que el estómago flote"], e:"El agua ayuda a que todo avance suavemente por el tubo digestivo."},
-    {g:"recto", q:"¿Cómo se llama la última parte del intestino grueso, donde se acumulan las heces?", a:["El recto","El duodeno","La faringe","El esófago"], e:"El recto guarda las heces hasta que vamos al baño."},
-  ],
-};
-
-/* Topics from the school's syllabus:
-   1) función del sistema digestivo  2) ingestión y digestión  3) órganos, glándulas y partes con su función
-   4) recorrido del alimento y procesos en cada órgano */
-const GENERAL = [
-  {q:"¿Cuál es la función principal del sistema digestivo?", a:["Transformar los alimentos en nutrientes que el cuerpo puede usar","Llevar oxígeno a la sangre","Producir la orina","Mover los huesos"], e:"El sistema digestivo transforma los alimentos en nutrientes, los absorbe y expulsa lo que no sirve."},
-  {q:"¿Para qué necesita el cuerpo los nutrientes de los alimentos?", a:["Para tener energía, crecer y reparar el cuerpo","Solo para tener sed","Para respirar mejor","No los necesita"], e:"Los nutrientes nos dan energía y los materiales para crecer y reparar el cuerpo."},
-  {q:"¿Qué hace el sistema digestivo con lo que el cuerpo no puede aprovechar?", a:["Lo expulsa como heces","Lo guarda para siempre","Lo convierte en sangre","Lo manda a los pulmones"], e:"Lo que no se digiere ni se absorbe forma las heces, que se expulsan por el ano."},
-  {q:"¿Qué sistema reparte por el cuerpo los nutrientes que absorbe el sistema digestivo?", a:["El sistema circulatorio (la sangre)","El sistema óseo","El sistema muscular","El sistema digestivo solo"], e:"Los nutrientes pasan a la sangre y el sistema circulatorio los lleva a todas las células."},
-  {q:"¿Qué son los nutrientes?", a:["Sustancias pequeñas de los alimentos que el cuerpo absorbe y usa","Los restos que salen como heces","Un tipo de diente","Los jugos del estómago"], e:"La digestión rompe los alimentos en nutrientes tan pequeños que pueden pasar a la sangre."},
-  {q:"¿Qué es la ingestión?", a:["Incorporar los alimentos por la boca","Transformar los alimentos en nutrientes","Expulsar las heces","Pasar los nutrientes a la sangre"], e:"Ingestión es el ingreso del alimento al cuerpo por la boca."},
-  {q:"¿Qué es la digestión?", a:["Transformar los alimentos en sustancias más simples: los nutrientes","Meter el alimento en la boca","Expulsar los desechos","Respirar mientras comemos"], e:"La digestión transforma los alimentos en nutrientes, de forma mecánica y química."},
-  {q:"¿En qué se diferencian la ingestión y la digestión?", a:["La ingestión es incorporar el alimento; la digestión es transformarlo en nutrientes","Son exactamente lo mismo","La digestión ocurre antes que la ingestión","La ingestión ocurre en el intestino"], e:"Primero ingerimos (entra el alimento por la boca) y después lo digerimos (lo transformamos)."},
-  {q:"Llevarte una cucharada de sopa a la boca es un ejemplo de…", a:["Ingestión","Digestión química","Absorción","Egestión"], e:"Incorporar el alimento por la boca es la ingestión."},
-  {q:"Cuando el jugo gástrico deshace las proteínas, ¿qué proceso ocurre?", a:["Digestión química","Ingestión","Egestión","Digestión mecánica"], e:"Es digestión química: los jugos digestivos cambian los alimentos en sustancias más simples."},
-  {q:"Masticar la comida con los dientes es un ejemplo de…", a:["Digestión mecánica","Digestión química","Absorción","Egestión"], e:"Es digestión mecánica: se rompe el alimento en trozos más pequeños, sin cambiar qué sustancia es."},
-  {q:"¿Qué diferencia hay entre digestión mecánica y digestión química?", a:["La mecánica rompe en trozos; la química transforma con jugos digestivos","Son lo mismo","La mecánica ocurre solo en el ano","La química se hace con los dientes"], e:"Mecánica: dientes y músculos trituran y mezclan. Química: saliva, jugo gástrico, bilis y jugo pancreático transforman."},
-  {q:"Los movimientos del estómago que mezclan y aplastan la comida son digestión…", a:["Mecánica","Química","Ingestión","Absorción"], e:"Mezclar y aplastar con músculos es digestión mecánica."},
-  {q:"¿Cuál de estos procesos ocurre primero?", a:["La ingestión","La digestión","La absorción","La egestión"], e:"Primero el alimento entra por la boca (ingestión); después se digiere, se absorbe y se expulsa lo que sobra."},
-  {q:"¿Cómo se llama el paso de los nutrientes del intestino a la sangre?", a:["Absorción","Ingestión","Egestión","Masticación"], e:"La absorción ocurre sobre todo en el intestino delgado, a través de las vellosidades."},
-  {q:"¿Cómo se llama la expulsión de las heces por el ano?", a:["Egestión","Ingestión","Absorción","Digestión"], e:"La egestión (o defecación) es la salida de los desechos del cuerpo."},
-  {q:"¿Cuál es el orden correcto de los procesos?", a:["Ingestión → digestión → absorción → egestión","Digestión → ingestión → egestión → absorción","Absorción → ingestión → digestión → egestión","Egestión → absorción → digestión → ingestión"], e:"Entra el alimento, se transforma, los nutrientes pasan a la sangre y lo que sobra se expulsa."},
-  {q:"¿En qué parte del cuerpo ocurre la ingestión?", a:["En la boca","En el estómago","En el intestino grueso","En el hígado"], e:"La ingestión ocurre en la boca, la puerta de entrada del sistema digestivo."},
-  {q:"¿Qué parte de lo que comemos termina formando las heces?", a:["Lo que el cuerpo no pudo digerir ni absorber","Los nutrientes","Solo el agua","La saliva"], e:"Las heces son los restos que no se aprovechan, como parte de la fibra."},
-];
-
-// Organs, glands and parts with their function (used to build questions with fresh answer mixes every game).
-const PARTS = [
-  {id:"boca", n:"la boca", lv:0, c:"mouth", f:"Recibir el alimento, masticarlo y mezclarlo con saliva"},
-  {id:"dientes", n:"los dientes", pl:true, lv:0, c:"mouth", f:"Cortar, desgarrar y triturar los alimentos"},
-  {id:"lengua", n:"la lengua", lv:0, c:"mouth", f:"Mover el alimento, formar el bolo y sentir los sabores"},
-  {id:"salivales", n:"las glándulas salivales", pl:true, lv:0, gland:true, f:"Producir la saliva, que ablanda el alimento y empieza a digerir el almidón"},
-  {id:"faringe", n:"la faringe", lv:1, f:"Conducir el bolo desde la boca hasta el esófago"},
-  {id:"epiglotis", n:"la epiglotis", lv:1, f:"Tapar la tráquea al tragar para que la comida no vaya a los pulmones"},
-  {id:"esofago", n:"el esófago", lv:1, f:"Llevar el bolo hasta el estómago con movimientos peristálticos"},
-  {id:"estomago", n:"el estómago", lv:2, f:"Mezclar el alimento con jugo gástrico y transformarlo en quimo"},
-  {id:"delgado", n:"el intestino delgado", lv:3, f:"Terminar la digestión y absorber los nutrientes hacia la sangre"},
-  {id:"higado", n:"el hígado", lv:3, gland:true, c:"bile", f:"Producir la bilis, que ayuda a digerir las grasas"},
-  {id:"vesicula", n:"la vesícula biliar", lv:3, annex:true, c:"bile", f:"Guardar la bilis hasta que se necesita"},
-  {id:"pancreas", n:"el páncreas", lv:3, gland:true, f:"Producir el jugo pancreático, que ayuda a digerir casi todos los alimentos"},
-  {id:"grueso", n:"el intestino grueso", lv:4, f:"Absorber el agua y formar las heces"},
-  {id:"recto", n:"el recto", lv:4, f:"Acumular las heces hasta que se expulsan"},
-  {id:"ano", n:"el ano", lv:4, f:"Expulsar las heces del cuerpo (egestión)"},
-];
-const ROUTE = ["boca","faringe","esofago","estomago","delgado","grueso","recto","ano"];
-const part = id => PARTS.find(p => p.id === id);
-const cap = s => s[0].toUpperCase() + s.slice(1);
-const low = s => s[0].toLowerCase() + s.slice(1);
-const deN = n => n.startsWith("el ") ? "del " + n.slice(3) : "de " + n;
-const ROUTE_TEXT = "El recorrido es: " + ROUTE.map(id => part(id).n.replace(/^(el|la|los|las) /,"")).join(" → ") + ".";
-const ANNEX = PARTS.filter(p => p.gland || p.annex);
-
-function organQuestions(L){
-  const qs = [];
-  PARTS.filter(p => p.lv === L).forEach(p => {
-    const d = shuffle(PARTS.filter(o => o.id !== p.id && !(p.c && o.c === p.c))).slice(0,3);
-    qs.push({id:"fn:"+p.id, g:p.id, q:`¿Qué función cumple${p.pl?"n":""} ${p.n}?`, a:[p.f, ...d.map(o => o.f)], e:`${cap(p.n)}: ${low(p.f)}.`});
-    qs.push({id:"who:"+p.id, g:p.id, q:`¿Qué parte del sistema digestivo se encarga de ${low(p.f)}?`, a:[cap(p.n), ...d.map(o => cap(o.n))], e:`${cap(p.n)} se encarga${p.pl?"n":""} de ${low(p.f)}.`});
-    const i = ROUTE.indexOf(p.id);
-    if (i >= 0 && i < ROUTE.length-1){
-      const nx = part(ROUTE[i+1]);
-      const d2 = shuffle(PARTS.filter(o => (ROUTE.includes(o.id) || o.gland) && o.id !== p.id && o.id !== nx.id)).slice(0,3);
-      qs.push({id:"next:"+p.id, g:"next:"+p.id, q:`En el recorrido del alimento, ¿a qué órgano pasa después ${deN(p.n)}?`, a:[cap(nx.n), ...d2.map(o => cap(o.n))], e:ROUTE_TEXT});
-    }
-  });
-  return qs;
-}
-// Route questions with random content, different every time.
-function routeQuestions(){
-  const qs = [];
-  { // correct order of three organs
-    const idx = shuffle(ROUTE.map((_,i)=>i)).slice(0,3).sort((a,b)=>a-b);
-    const names = idx.map(i => part(ROUTE[i]).n.replace(/^(el|la) /,""));
-    const fmt = o => o.map(k => names[k]).join(" → ");
-    const perms = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
-    const wrong = shuffle(perms.slice(1)).slice(0,3);
-    qs.push({id:"rnd:order", g:"order", q:"¿En qué orden pasa el alimento por estos órganos?", a:[fmt(perms[0]), ...wrong.map(fmt)].map(cap), e:ROUTE_TEXT});
-  }
-  { // which one comes first
-    const four = shuffle(ROUTE.slice(0,7)).slice(0,4);
-    const first = four.reduce((a,b) => ROUTE.indexOf(a) < ROUTE.indexOf(b) ? a : b);
-    qs.push({id:"rnd:first", g:"first", q:"De estos órganos, ¿por cuál pasa PRIMERO el alimento?", a:[first, ...four.filter(x => x !== first)].map(id => cap(part(id).n)), e:ROUTE_TEXT});
-  }
-  { // food does not go through annex organs
-    const an = pick(ANNEX), r = shuffle(ROUTE.map(part)).slice(0,3);
-    qs.push({id:"rnd:notroute", g:"notroute", q:"¿Por cuál de estos órganos NO pasa el alimento?", a:[cap(an.n), ...r.map(o => cap(o.n))], e:`El alimento no pasa por ${an.n}: es un órgano anexo que ayuda a la digestión desde afuera del tubo digestivo.`});
-  }
-  { // annex glands
-    const gl = pick(PARTS.filter(p => p.gland)), r = shuffle(ROUTE.map(part)).slice(0,3);
-    qs.push({id:"rnd:gland", g:"gland", q:"¿Cuál de estas es una glándula anexa del sistema digestivo?", a:[cap(gl.n), ...r.map(o => cap(o.n))], e:"Las glándulas anexas son las glándulas salivales, el hígado y el páncreas: fabrican jugos que ayudan a digerir."});
-  }
-  return qs;
-}
-
-const SAY_ASK = ["¡Tú puedes!","Piénsalo bien…","¡Esta es fácil!","Mmm… ¿cuál será?","¡Concéntrate!","¡Vamos, crack!"];
-const SAY_OK = ["¡Genial!","¡Increíble!","¡Eres un genio!","¡Correcto!","¡Bravo!","¡Toma ya!"];
-const SAY_BAD = ["¡Uy, casi!","¡Ay, no!","¡Ups!","¡Por poquito!"];
-
-/* ================= HELPERS ================= */
-const $ = id => document.getElementById(id);
-const rnd = (a,b) => a + Math.random()*(b-a);
-const pick = arr => arr[Math.floor(Math.random()*arr.length)];
-const shuffle = arr => { const a = arr.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; };
-const store = {
-  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
-};
-
-function boloSVG(mood){
-  const mouths = {
-    happy:'<path d="M38 66 Q50 80 62 66" stroke="#4a2a10" stroke-width="5" fill="#ff7a8a" stroke-linecap="round"/>',
-    think:'<ellipse cx="54" cy="70" rx="5" ry="6" fill="#4a2a10"/>',
-    sad:'<path d="M38 74 Q50 62 62 74" stroke="#4a2a10" stroke-width="5" fill="none" stroke-linecap="round"/>',
-    wow:'<ellipse cx="50" cy="70" rx="9" ry="10" fill="#4a2a10"/><ellipse cx="50" cy="74" rx="5" ry="4" fill="#ff7a8a"/>',
-  };
-  const pupils = mood==="think" ? [42,62,34] : [40,60,40];
-  const tear = mood==="sad" ? '<path d="M30 52 q-4 8 0 11 q4 -3 0 -11z" fill="#7fd3ff"/>' : '';
-  const brows = mood==="sad" ? '<path d="M28 30 L42 35 M72 30 L58 35" stroke="#4a2a10" stroke-width="4" stroke-linecap="round"/>' :
-                mood==="think" ? '<path d="M28 31 L42 29 M58 27 L72 31" stroke="#4a2a10" stroke-width="4" stroke-linecap="round"/>' : '';
-  const cheeks = mood==="happy"||mood==="wow" ? '<circle cx="26" cy="60" r="6" fill="#ff8fa3" opacity=".7"/><circle cx="74" cy="60" r="6" fill="#ff8fa3" opacity=".7"/>' : '';
-  return `<svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
-    <ellipse cx="50" cy="94" rx="30" ry="5" fill="rgba(0,0,0,.35)"/>
-    <circle cx="50" cy="52" r="40" fill="#f3c37a" stroke="#7a4a1d" stroke-width="4"/>
-    <circle cx="30" cy="34" r="4" fill="#d9a35a"/><circle cx="72" cy="78" r="5" fill="#d9a35a"/><circle cx="76" cy="40" r="3" fill="#8bc34a"/><circle cx="24" cy="72" r="3" fill="#e5533d"/>
-    <path d="M22 40 Q30 18 52 14" stroke="#fff2d6" stroke-width="5" fill="none" stroke-linecap="round" opacity=".8"/>
-    ${brows}
-    <ellipse cx="38" cy="46" rx="9" ry="11" fill="#fff"/><ellipse cx="62" cy="46" rx="9" ry="11" fill="#fff"/>
-    <circle cx="${pupils[0]}" cy="${pupils[2]+8}" r="5" fill="#1b0f2e"/><circle cx="${pupils[1]}" cy="${pupils[2]+8}" r="5" fill="#1b0f2e"/>
-    <circle cx="${pupils[0]+2}" cy="${pupils[2]+6}" r="1.8" fill="#fff"/><circle cx="${pupils[1]+2}" cy="${pupils[2]+6}" r="1.8" fill="#fff"/>
-    ${cheeks}${mouths[mood]||mouths.happy}${tear}
-  </svg>`;
-}
-
-/* ================= AUDIO ================= */
-let actx = null, master, musicGain, sfxGain, noiseBuf;
-let muted = store.get("vb.muted", false);
-function initAudio(){
-  if (actx) { if (actx.state === "suspended") actx.resume(); return; }
-  try {
-    actx = new (window.AudioContext || window.webkitAudioContext)();
-    master = actx.createGain(); master.gain.value = muted ? 0 : 0.8; master.connect(actx.destination);
-    musicGain = actx.createGain(); musicGain.gain.value = 0.32; musicGain.connect(master);
-    sfxGain = actx.createGain(); sfxGain.gain.value = 0.6; sfxGain.connect(master);
-    noiseBuf = actx.createBuffer(1, actx.sampleRate*0.5, actx.sampleRate);
-    const d = noiseBuf.getChannelData(0); for (let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
-  } catch(e){ actx = null; }
-}
-function tone(freq, dur, type="square", vol=0.3, slide=null, when=0, dest=null){
-  if (!actx) return;
-  const t = actx.currentTime + when;
-  const o = actx.createOscillator(), g = actx.createGain();
-  o.type = type; o.frequency.setValueAtTime(freq, t);
-  if (slide) o.frequency.exponentialRampToValueAtTime(slide, t+dur);
-  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t+dur);
-  o.connect(g); g.connect(dest || sfxGain); o.start(t); o.stop(t+dur+0.02);
-}
-function noise(dur, vol=0.3, hp=1000, t0=null, dest=null){
-  if (!actx) return;
-  const t = t0 ?? actx.currentTime;
-  const s = actx.createBufferSource(); s.buffer = noiseBuf;
-  const f = actx.createBiquadFilter(); f.type = "highpass"; f.frequency.value = hp;
-  const g = actx.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t+dur);
-  s.connect(f); f.connect(g); g.connect(dest || sfxGain); s.start(t); s.stop(t+dur+0.02);
-}
-const sfx = {
-  jump(){ tone(320, .12, "square", .12, 640); },
-  coin(){ tone(988, .07, "square", .12); tone(1319, .12, "square", .12, null, .06); },
-  heart(){ [523,659,784,1047].forEach((f,i)=>tone(f,.12,"triangle",.2,null,i*.07)); },
-  hit(){ noise(.35,.5,200); tone(200,.35,"sawtooth",.25,50); },
-  right(){ [523,659,784,1047,1319].forEach((f,i)=>tone(f,.16,"square",.13,null,i*.075)); },
-  wrong(){ tone(330,.22,"sawtooth",.2,220); tone(220,.35,"sawtooth",.2,110,.2); },
-  portal(){ tone(400,.4,"sine",.25,1200); },
-  level(){ [392,523,659,784,659,784,1047].forEach((f,i)=>tone(f,.18,"square",.12,null,i*.1)); },
-  over(){ [392,330,262,196].forEach((f,i)=>tone(f,.3,"triangle",.25,null,i*.22)); },
-  click(){ tone(660,.05,"square",.08); },
-};
-function setMuted(m){
-  muted = m; store.set("vb.muted", m);
-  if (master) master.gain.value = m ? 0 : 0.8;
-  $("muteBtn").textContent = m ? "🔇" : "🔊";
-}
-
-// Music: a small step sequencer (kick, hat, bass, arpeggio) in a minor progression.
-const music = { on:false, step:0, next:0, timer:null, root:57, bpm:130 };
-const PROG = [0, -4, 3, -2];   // i - VI - III - VII
-const mtof = m => 440*Math.pow(2,(m-69)/12);
-function startMusic(){
-  if (!actx || music.on) return;
-  const m = LEVELS[game.level].music;
-  music.root = m.root; music.bpm = m.bpm * (game.easy ? 0.92 : 1);
-  music.on = true; music.step = 0; music.next = actx.currentTime + 0.06;
-  music.timer = setInterval(scheduleMusic, 25);
-}
-function stopMusic(){ music.on = false; clearInterval(music.timer); }
-function scheduleMusic(){
-  const spb = 60/music.bpm/4;
-  while (music.next < actx.currentTime + 0.12){ playStep(music.step, music.next); music.next += spb; music.step = (music.step+1) % 64; }
-}
-function playStep(s, t){
-  const bar = Math.floor(s/16) % 4, i = s % 16, root = music.root + PROG[bar];
-  const when = t - actx.currentTime;
-  if (i % 4 === 0){ // kick
-    const o = actx.createOscillator(), g = actx.createGain();
-    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t+.12);
-    g.gain.setValueAtTime(.9, t); g.gain.exponentialRampToValueAtTime(.001, t+.15);
-    o.connect(g); g.connect(musicGain); o.start(t); o.stop(t+.16);
-  }
-  if (i % 8 === 4) noise(.12, .25, 1500, t, musicGain); // snare
-  if (i % 2 === 1) noise(.03, .12, 7000, t, musicGain); // hat
-  if (i % 2 === 0) tone(mtof(root - 12 + (i % 4 === 2 ? 12 : 0)), .14, "triangle", .45, null, when, musicGain);
-  const arp = [0, 3, 7, 12, 7, 3, 0, 15];
-  if ([0,3,6,8,10,12,14].includes(i)) tone(mtof(root + 12 + arp[(i/2|0) % 8]), .1, "square", .12, null, when, musicGain);
-}
-
-/* ================= CANVAS & GAME STATE ================= */
-const W = 960, H = 540, GROUND = 452, T = 40, S = 36, PX = 230;
-const G = 2700, V0 = 770;          // jump ~110px high, ~0.57s in air
-const cv = $("c"), ctx = cv.getContext("2d");
-const fxc = $("fx"), fx = fxc.getContext("2d");
-
-const game = {
-  state:"menu", easy:true, level:0, score:0, hearts:3, maxHearts:3, streak:0, correct:0, asked:0,
-  items:[], length:0, speed:400, qset:[], qn:0, t:0, shake:0, cam:0,
-};
-const player = { x:0, y:GROUND-S, vy:0, grounded:true, rot:0, inv:0, squash:0 };
-const input = { held:false, buffer:0 };
-let particles = [], confetti = [], trail = [], popups = [];
-const coinVariant = it => Math.abs(Math.round(it.x / 36));
-
-/* --- level generation --- */
-const spike = x => ({type:"spike", x, y:GROUND-T, w:T, h:T});
-const block = (x,w,h) => ({type:"block", x, y:GROUND-h, w, h});
-const coin = (x,y) => ({type:"coin", x, y, r:11});
-const coinArc = (cx, n=3) => Array.from({length:n}, (_,k)=>coin(cx + (k-(n-1)/2)*36, GROUND - 120 + Math.abs(k-(n-1)/2)*22));
-const PAT = {
-  s1:     () => ({w:T,   items:[spike(0), ...(Math.random()<.6 ? coinArc(T/2) : [])]}),
-  s2:     () => ({w:2*T, items:[spike(0), spike(T), ...(Math.random()<.5 ? coinArc(T) : [])]}),
-  s3:     () => ({w:3*T, items:[spike(0), spike(T), spike(2*T), ...coinArc(1.5*T)]}),
-  b1:     () => ({w:T,   items:[block(0,T,T)]}),
-  bwide:  () => ({w:4*T, items:[block(0,4*T,T), coin(T, GROUND-T-30), coin(2*T, GROUND-T-30), coin(3*T, GROUND-T-30)]}),
-  spikeB: () => ({w:2*T, items:[block(0,T,T), spike(T)]}),
-  stairs: () => ({w:4*T, items:[block(0,2*T,T), block(2*T,2*T,2*T), coin(3*T, GROUND-2*T-30)]}),
-  bridge: () => ({w:7*T, items:[block(0,2*T,T), spike(2*T), spike(3*T), spike(4*T), block(5*T,2*T,T), coin(3.5*T, GROUND-150)]}),
-  tall:   () => ({w:T,   items:[block(0,T,2*T)]}),
-  coins:  () => ({w:5*T, items:[0,1,2,3,4].map(k=>coin(k*T+T/2, GROUND-20))}),
-};
-const POOLS = [
-  ["s1","s1","s2","b1","bwide","coins"],
-  ["s1","s2","s2","b1","bwide","spikeB","stairs"],
-  ["s1","s2","s3","spikeB","stairs","bridge","bwide"],
-  ["s2","s3","spikeB","stairs","bridge","tall","b1"],
-  ["s2","s3","s3","spikeB","stairs","bridge","tall","bwide"],
-];
-function genLevel(L){
-  const items = []; let x = 700;
-  const add = name => { const r = PAT[name](); r.items.forEach(it => { it.x += x; items.push(it); }); x += r.w; };
-  const gap = () => T * rnd(game.easy ? 6 : 5, game.easy ? 9 : 8) * (1 - L*0.04);
-  for (let q=0; q<3; q++){
-    const n = 4 + L + q;
-    for (let i=0; i<n; i++){ add(pick(POOLS[L])); x += gap(); }
-    x += 160;
-    items.push({type:"portal", x, y:GROUND-170, w:70, h:170, q});
-    if (q === 1) items.push({type:"heart", x: x + 260, y: GROUND - 70, r:15});
-    x += 560;
-  }
-  for (let i=0; i<4+L; i++){ add(pick(POOLS[L])); x += gap(); }
-  x += 200;
-  items.push({type:"goal", x, y:GROUND-200, w:90, h:200});
-  items.sort((a,b) => a.x - b.x);
-  game.items = items; game.length = x;
-}
-
-// Each level gets 3 questions: one general (función, ingestión/digestión or recorrido), one about the
-// organs/glands of that level, and one from the level's own list. Questions not seen recently come first.
-function pickQuestions(){
-  const seen = new Set(store.get("vb.seen", []));
-  const used = new Set();
-  const choose = pool => {
-    let c = pool.filter(q => !used.has(q.g || q.id));
-    if (!c.length) c = pool;
-    let fresh = c.filter(q => !seen.has(q.id));
-    if (!fresh.length){ pool.forEach(q => seen.delete(q.id)); fresh = c; }
-    const q = pick(fresh); used.add(q.g || q.id); return q;
-  };
-  const general = GENERAL.map((q,i) => ({...q, id:"gen"+i}));
-  game.qset = LEVELS.map((l, L) => {
-    const hand = QUESTIONS[l.key].map((q,i) => ({...q, id:l.key+i}));
-    return shuffle([
-      choose(Math.random() < 0.35 ? routeQuestions() : general),
-      choose(organQuestions(L)),
-      choose(hand),
-    ]);
-  });
-  store.set("vb.seen", [...seen]);
-}
-function markSeen(q){
-  if (q.id.startsWith("rnd:")) return;
-  const seen = store.get("vb.seen", []);
-  if (!seen.includes(q.id)){ seen.push(q.id); store.set("vb.seen", seen); }
-}
-
-/* --- flow --- */
-const screens = ["menu","help","levelcard","quiz","pause","over","records"];
-function show(id){ screens.forEach(s => $(s).hidden = (s !== id)); }
-function hideAll(){ screens.forEach(s => $(s).hidden = true); }
-
-function startGame(){
-  initAudio(); sfx.click();
-  game.level = 0; game.score = 0; game.streak = 0; game.correct = 0; game.asked = 0;
-  game.maxHearts = game.easy ? 5 : 3; game.hearts = game.maxHearts;
-  pickQuestions();
-  showLevelCard();
-}
-function showLevelCard(){
-  const L = LEVELS[game.level];
-  game.state = "levelcard";
-  genLevel(game.level);
-  game.speed = (400 + game.level*38) * (game.easy ? 0.85 : 1);
-  Object.assign(player, {x:0, y:GROUND-S, vy:0, grounded:true, rot:0, inv:0});
-  game.qn = 0; game.cam = 0; particles = []; trail = []; popups = [];
-  $("lcStep").textContent = `Parada ${game.level+1} de 5`;
-  $("lcEmoji").textContent = L.emoji;
-  $("lcName").textContent = L.name;
-  $("lcText").textContent = L.text;
-  $("lcForm").textContent = L.form;
-  $("lcCollect").textContent = L.collect.text;
-  updateHUD();
-  $("hud").hidden = false;
-  show("levelcard");
-  setTimeout(()=>$("goBtn").focus(), 50);
-}
-function beginRun(){
-  initAudio(); sfx.click();
-  hideAll(); game.state = "play"; input.held = false; input.buffer = 0;
-  startMusic();
-}
-function levelComplete(){
-  stopMusic(); sfx.level(); burstConfetti(120);
-  game.score += 200; updateHUD();
-  game.level++;
-  if (game.level >= LEVELS.length) { setTimeout(()=>endGame(true), 700); game.state = "won"; }
-  else { game.state = "transition"; setTimeout(showLevelCard, 900); }
-}
-function pauseGame(){
-  if (game.state !== "play") return;
-  game.state = "paused"; stopMusic(); show("pause");
-  setTimeout(()=>$("resumeBtn").focus(), 50);
-}
-function resumeGame(){ hideAll(); game.state = "play"; input.held = false; startMusic(); }
-function toMenu(){ stopMusic(); game.state = "menu"; $("hud").hidden = true; show("menu"); }
-
-function endGame(won){
-  stopMusic();
-  game.state = "over";
-  const reached = won ? "¡La meta!" : LEVELS[game.level].short;
-  game.reached = reached;
-  $("overMascot").innerHTML = boloSVG(won ? "wow" : "sad");
-  $("overTitle").textContent = won ? "¡Misión cumplida! 🚽🎉" : "¡Oh no, te quedaste sin vidas!";
-  $("overText").textContent = won
-    ? `Recorriste todo el sistema digestivo: ¡unos 9 metros de aventura! Respondiste bien ${game.correct} de ${game.asked} preguntas.`
-    : `Llegaste hasta ${LEVELS[game.level].name.toLowerCase()}. Respondiste bien ${game.correct} de ${game.asked} preguntas. ¡Inténtalo otra vez!`;
-  $("overScore").textContent = `⭐ ${game.score} puntos`;
-  $("saveForm").hidden = false;
-  $("nameIn").value = store.get("vb.lastName", "");
-  if (won){ burstConfetti(250); } else { sfx.over(); }
-  show("over");
-  setTimeout(()=>$("nameIn").focus(), 80);
-}
-
-/* --- quiz --- */
-let currentQ = null, answered = false;
-function openQuiz(){
-  game.state = "quiz"; stopMusic(); sfx.portal();
-  const raw = game.qset[game.level][game.qn++];
-  markSeen(raw);
-  const opts = shuffle(raw.a.map((text,i) => ({text, ok:i===0})));
-  currentQ = {raw, opts}; answered = false;
-  game.asked++;
-  $("qcount").textContent = `Pregunta ${game.asked} de 15 · ${LEVELS[game.level].emoji} ${LEVELS[game.level].short}`;
-  $("qstreak").textContent = game.streak >= 2 ? `🔥 Racha x${game.streak}` : "";
-  $("qtext").textContent = raw.q;
-  $("qsay").textContent = pick(SAY_ASK);
-  $("quizMascot").innerHTML = boloSVG("think");
-  const colors = [["#46c8ff","#1f7fae"],["#ffc93c","#b5861a"],["#ff5d8f","#a8325a"],["#b6f05a","#6e9a2a"]];
-  const box = $("answers"); box.innerHTML = "";
-  opts.forEach((o,i) => {
-    const b = document.createElement("button");
-    b.className = "ans"; b.style.setProperty("--c", colors[i][0]); b.style.setProperty("--d", colors[i][1]);
-    b.innerHTML = `<b>${i+1}</b><span></span>`; b.querySelector("span").textContent = o.text;
-    b.addEventListener("click", () => answer(i));
-    box.appendChild(b);
-  });
-  $("feedback").hidden = true;
-  show("quiz");
-}
-function answer(i){
-  if (answered || game.state !== "quiz") return;
-  answered = true;
-  const btns = [...$("answers").children];
-  const ok = currentQ.opts[i].ok;
-  btns.forEach((b,k) => { b.disabled = true; if (currentQ.opts[k].ok) b.classList.add("right"); else if (k===i) b.classList.add("wrong"); else b.classList.add("dim"); });
-  if (ok){
-    game.streak++; game.correct++;
-    const pts = 100 + (game.streak-1)*50;
-    game.score += pts;
-    sfx.right(); burstConfetti(80);
-    $("quizMascot").innerHTML = boloSVG("wow");
-    $("qsay").textContent = pick(SAY_OK);
-    $("fbtitle").innerHTML = `✅ ¡Correcto! <span style="color:var(--sun)">+${pts}</span>${game.streak>=2?` <span style="color:var(--pink)">🔥 x${game.streak}</span>`:""}`;
-  } else {
-    game.streak = 0;
-    game.hearts--;
-    sfx.wrong(); game.shake = 10;
-    $("quizMascot").innerHTML = boloSVG("sad");
-    $("qsay").textContent = pick(SAY_BAD);
-    $("fbtitle").innerHTML = `❌ La respuesta era: <span style="color:var(--ok)"></span>`;
-    $("fbtitle").querySelector("span").textContent = currentQ.raw.a[0];
-  }
-  $("fbtext").textContent = "💡 " + currentQ.raw.e;
-  $("contBtn").textContent = game.hearts <= 0 ? "Ver resultado" : "Seguir ▶";
-  $("feedback").hidden = false;
-  updateHUD();
-  setTimeout(()=>$("contBtn").focus(), 50);
-}
-function closeQuiz(){
-  if (!answered || game.state !== "quiz") return;
-  sfx.click();
-  if (game.hearts <= 0){ endGame(false); return; }
-  hideAll(); game.state = "play"; input.held = false; input.buffer = 0;
-  startMusic();
-}
-
-/* --- records --- */
-function getRecords(){ return store.get("vb.records", []); }
-function renderRecords(highlight){
-  const recs = getRecords();
-  const body = $("recBody"); body.innerHTML = "";
-  if (!recs.length){ body.innerHTML = `<tr><td colspan="4" class="muted">Todavía no hay récords. ¡Sé el primero!</td></tr>`; return; }
-  recs.forEach((r,i) => {
-    const tr = document.createElement("tr");
-    if (highlight != null && i === highlight) tr.className = "me";
-    const medal = ["🥇","🥈","🥉"][i] || (i+1);
-    [medal, r.name, r.reached, r.score].forEach((v,k) => { const td = document.createElement("td"); td.textContent = v; if (k===3) td.className = "num"; tr.appendChild(td); });
-    body.appendChild(tr);
-  });
-}
-function saveRecord(name){
-  const recs = getRecords();
-  const rec = {name: name || "Anónimo", score: game.score, reached: game.reached, t: Date.now()};
-  recs.push(rec); recs.sort((a,b) => b.score - a.score || a.t - b.t);
-  const top = recs.slice(0,10); store.set("vb.records", top);
-  store.set("vb.lastName", name);
-  return top.indexOf(rec);
-}
-
-/* --- HUD --- */
-function updateHUD(){
-  const full = "❤️".repeat(Math.max(0,game.hearts)), empty = "🖤".repeat(Math.max(0, game.maxHearts - game.hearts));
-  $("hearts").textContent = full + empty;
-  $("score").textContent = "⭐ " + game.score;
-  const L = LEVELS[game.level] || LEVELS[4];
-  $("lvlname").textContent = `${L.emoji} ${L.short}`;
-}
-function updateProgress(){
-  const p = Math.max(0, Math.min(1, player.x / game.length));
-  $("progfill").style.width = (p*100) + "%";
-  $("progdot").style.left = (p*100) + "%";
-}
-
-/* ================= SIMULATION ================= */
-function hurt(){
-  if (player.inv > 0) return;
-  game.hearts--; game.streak = 0; player.inv = 1.6; game.shake = 14;
-  sfx.hit();
-  for (let i=0;i<24;i++) particles.push({x:player.x+S/2, y:player.y+S/2, vx:rnd(-300,300), vy:rnd(-400,100), life:rnd(.4,.8), max:.8, c:LEVELS[game.level].player, s:rnd(3,7)});
-  updateHUD();
-  if (game.hearts <= 0){ game.state = "dying"; setTimeout(()=>endGame(false), 900); }
-}
-function step(dt){
-  game.t += dt;
-  if (game.shake > 0) game.shake = Math.max(0, game.shake - dt*40);
-  updateParticles(dt);
-  if (game.state === "menu" || game.state === "levelcard"){ game.cam += 120*dt; return; }
-  if (game.state !== "play" && game.state !== "dying") return;
-  const p = player;
-  if (game.state === "dying"){ p.vy += G*dt; p.y += p.vy*dt*0.3; return; }
-
-  if (input.buffer > 0) input.buffer -= dt;
-  if (p.inv > 0) p.inv -= dt;
-  const prevBottom = p.y + S;
-  p.vy += G*dt; p.y += p.vy*dt; p.x += game.speed*dt;
-  const wasGrounded = p.grounded;
-  p.grounded = false;
-  if (p.y + S >= GROUND){ p.y = GROUND - S; p.vy = 0; p.grounded = true; }
-
-  for (const it of game.items){
-    if (it.x > p.x + 120) break;
-    if (it.x + (it.w||30) < p.x - 60) continue;
-    if (it.done) continue;
-    if (it.type === "block"){
-      if (p.x + S > it.x + 2 && p.x < it.x + it.w - 2 && p.y + S > it.y && p.y < it.y + it.h){
-        if (prevBottom <= it.y + 12 && p.vy >= 0){ p.y = it.y - S; p.vy = 0; p.grounded = true; }
-        else hurt();
-      }
-    } else if (it.type === "spike"){
-      // forgiving hitbox: the inner part of the triangle
-      if (p.x + S - 6 > it.x + 12 && p.x + 6 < it.x + it.w - 12 && p.y + S - 4 > it.y + 14) hurt();
-    } else if (it.type === "coin" || it.type === "heart"){
-      const cx = p.x + S/2, cy = p.y + S/2;
-      if (Math.hypot(cx - it.x, cy - it.y) < it.r + S/2){
-        it.done = true;
-        if (it.type === "coin"){ const c = LEVELS[game.level].collect, v = coinVariant(it); game.score += 10; sfx.coin(); sparkle(it.x, it.y, c.colors[v % c.colors.length]); popups.push({x:it.x, y:it.y-20, life:.8, text:"+10 " + (v % 2 && c.name2 ? c.name2 : c.name), c:c.colors[v % c.colors.length]}); }
-        else { if (game.hearts < game.maxHearts) game.hearts++; else game.score += 50; sfx.heart(); sparkle(it.x, it.y, "#ff5d6e", 20); }
-        updateHUD();
-      }
-    } else if (it.type === "portal"){
-      if (p.x + S/2 >= it.x + it.w/2){ it.done = true; sparkle(it.x+it.w/2, it.y+it.h/2, "#46c8ff", 30); openQuiz(); return; }
-    } else if (it.type === "goal"){
-      if (p.x + S/2 >= it.x + it.w/2){ it.done = true; levelComplete(); return; }
-    }
-  }
-
-  if (p.grounded && !wasGrounded){ p.squash = 1; for (let i=0;i<6;i++) particles.push({x:p.x+rnd(0,S), y:p.y+S, vx:rnd(-80,80), vy:rnd(-120,-20), life:.3, max:.3, c:LEVELS[game.level].groundTop, s:3}); }
-  if (p.grounded && (input.held || input.buffer > 0)){
-    p.vy = -V0; p.grounded = false; input.buffer = 0; sfx.jump();
-  }
-  if (!p.grounded) p.rot += dt * 2*Math.PI / 0.57;
-  else { const target = Math.round(p.rot / (2*Math.PI)) * 2*Math.PI; p.rot += (target - p.rot) * Math.min(1, dt*18); }
-  if (p.squash > 0) p.squash = Math.max(0, p.squash - dt*5);
-
-  trail.push({x:p.x+S/2, y:p.y+S/2, life:.35});
-  game.cam = p.x - PX;
-  updateProgress();
-}
-function updateParticles(dt){
-  for (const q of particles){ q.x += q.vx*dt; q.y += q.vy*dt; q.vy += 900*dt; q.life -= dt; }
-  particles = particles.filter(q => q.life > 0);
-  for (const q of popups){ q.y -= 60*dt; q.life -= dt; }
-  popups = popups.filter(q => q.life > 0);
-  for (const q of trail) q.life -= dt;
-  trail = trail.filter(q => q.life > 0);
-  for (const c of confetti){ c.x += c.vx*dt; c.y += c.vy*dt; c.vy += 500*dt; c.vx *= 0.99; c.rot += c.vr*dt; c.life -= dt; }
-  confetti = confetti.filter(c => c.life > 0 && c.y < H + 40);
-}
-function sparkle(x,y,c,n=10){ for (let i=0;i<n;i++){ const a = rnd(0,Math.PI*2), v = rnd(80,260); particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-100,life:rnd(.3,.6),max:.6,c,s:rnd(2,5)}); } }
-function burstConfetti(n){
-  const cols = ["#ff5d8f","#ffc93c","#46c8ff","#b6f05a","#8b5cf6","#fff7ee"];
-  for (let i=0;i<n;i++) confetti.push({x:rnd(0,W), y:rnd(-60,-10), vx:rnd(-120,120), vy:rnd(100,350), rot:rnd(0,6), vr:rnd(-8,8), w:rnd(6,12), h:rnd(4,8), c:pick(cols), life:rnd(2,3.5)});
-  for (let i=0;i<n/3;i++) confetti.push({x:W/2+rnd(-40,40), y:H*0.6, vx:rnd(-500,500), vy:rnd(-700,-300), rot:0, vr:rnd(-8,8), w:rnd(6,12), h:rnd(4,8), c:pick(cols), life:rnd(2,3)});
-}
-
-/* ================= RENDER ================= */
-function roundRect(c, x, y, w, h, r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
-const mod = (a,n) => ((a % n) + n) % n;
-
-function drawBackground(L, cam, t){
-  const g = ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0, L.bgTop); g.addColorStop(1, L.bgBot);
-  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
-  ctx.save();
-  if (L.key === "boca"){
-    // upper teeth row and uvula-ish bumps
-    ctx.fillStyle = "rgba(255,140,170,.25)";
-    for (let i=-1;i<14;i++){ const x = mod(i*90 - cam*0.25, 90*14) - 90; ctx.beginPath(); ctx.arc(x, H*0.62, 70, Math.PI, 0); ctx.fill(); }
-    ctx.fillStyle = "#c2335c"; ctx.fillRect(0,0,W,52);
-    for (let i=-1;i<12;i++){
-      const x = mod(i*96 - cam*0.5, 96*12) - 96;
-      ctx.fillStyle = "#fffaf0"; roundRect(ctx, x+8, 30, 72, 58, 18); ctx.fill();
-      ctx.fillStyle = "rgba(0,0,0,.08)"; roundRect(ctx, x+50, 34, 22, 48, 10); ctx.fill();
-    }
-  } else if (L.key === "esofago"){
-    for (let i=-1;i<10;i++){
-      const x = mod(i*130 - cam*0.6, 130*10) - 130;
-      const pulse = 1 + 0.15*Math.sin(t*5 + i*0.9);
-      ctx.strokeStyle = "rgba(255,190,130,.28)"; ctx.lineWidth = 16*pulse;
-      ctx.beginPath(); ctx.ellipse(x, H/2 - 20, 38*pulse, H*0.55, 0, 0, Math.PI*2); ctx.stroke();
-    }
-    ctx.fillStyle = "rgba(60,20,4,.45)"; ctx.fillRect(0,0,W,40);
-  } else if (L.key === "estomago"){
-    ctx.strokeStyle = "rgba(220,255,120,.18)"; ctx.lineWidth = 10;
-    for (let r=0;r<3;r++){ ctx.beginPath(); for (let x=0;x<=W;x+=20){ const y = 40 + r*45 + Math.sin((x + cam*0.3)/60 + r + t)*12; x? ctx.lineTo(x,y) : ctx.moveTo(x,y); } ctx.stroke(); }
-    for (let i=0;i<26;i++){
-      const sp = 40 + (i*37)%60, x = mod(i*97 - cam*0.35, W+60) - 30;
-      const y = H - mod(t*sp + i*83, H+40);
-      ctx.strokeStyle = "rgba(230,255,140,.5)"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(x + Math.sin(t*2+i)*8, y, 5 + (i%4)*3, 0, Math.PI*2); ctx.stroke();
-    }
-  } else if (L.key === "delgado"){
-    for (let layer=0; layer<2; layer++){
-      const par = layer ? 0.55 : 0.3, col = layer ? "rgba(243,166,255,.35)" : "rgba(243,166,255,.16)", sz = layer ? 1 : 0.7;
-      ctx.fillStyle = col;
-      for (let i=-1;i<24;i++){
-        const x = mod(i*48 - cam*par, 48*24) - 48, sway = Math.sin(t*2 + i)*6;
-        const h = (70 + (i*29)%50)*sz;
-        roundRect(ctx, x+sway*0.3, -20, 26*sz, h, 13*sz); ctx.fill();
-        roundRect(ctx, x+20+sway, GROUND - h - 10 + 20*(1-sz), 26*sz, h + 30, 13*sz); ctx.fill();
-      }
-    }
-  } else if (L.key === "grueso"){
-    ctx.fillStyle = "rgba(224,172,116,.16)";
-    for (let i=-1;i<9;i++){ const x = mod(i*150 - cam*0.3, 150*9) - 150; ctx.beginPath(); ctx.arc(x+75, -30, 95, 0, Math.PI); ctx.fill(); }
-    for (let i=0;i<10;i++){
-      const x = mod(i*130 - cam*0.45 + Math.sin(t+i)*20, W+120) - 60, y = 120 + (i*67)%220 + Math.sin(t*1.5+i*2)*12;
-      const col = ["#7ed957","#ffb347","#6fc3ff","#ff7eb6"][i%4];
-      ctx.save(); ctx.translate(x,y); ctx.rotate(Math.sin(t+i)*0.3);
-      ctx.fillStyle = col; ctx.globalAlpha = .3; roundRect(ctx,-20,-10,40,20,10); ctx.fill();
-      ctx.globalAlpha = .45; ctx.fillStyle = "#2e1a0b";
-      ctx.beginPath(); ctx.arc(-6,-2,2.4,0,7); ctx.arc(6,-2,2.4,0,7); ctx.fill();
-      ctx.strokeStyle = "#2e1a0b"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(0,2,5,0.2,Math.PI-0.2); ctx.stroke();
-      ctx.restore();
-    }
-  }
-  ctx.restore();
-}
-function drawGround(L, cam){
-  ctx.fillStyle = L.ground; ctx.fillRect(0, GROUND, W, H-GROUND);
-  ctx.fillStyle = "rgba(0,0,0,.12)";
-  for (let i=-1;i<26;i++){ const x = mod(i*40 - cam, 40*26) - 40; ctx.fillRect(x, GROUND+14, 20, 4); }
-  if (L.key === "boca"){ ctx.fillStyle = "rgba(255,255,255,.18)"; for (let i=0;i<40;i++){ const x = mod(i*61 - cam, W+40)-20; ctx.beginPath(); ctx.arc(x, GROUND + 30 + (i*13)%50, 3, 0, 7); ctx.fill(); } }
-  ctx.fillStyle = L.groundTop; ctx.fillRect(0, GROUND, W, 5);
-  ctx.shadowColor = L.groundTop; ctx.shadowBlur = 14; ctx.fillRect(0, GROUND, W, 2); ctx.shadowBlur = 0;
-}
-function drawSpike(L, x, y){
-  if (L.key === "boca"){ // a tooth
-    ctx.fillStyle = L.spike; ctx.strokeStyle = L.spikeEdge; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(x+3, y+T); ctx.lineTo(x+8, y+10); ctx.quadraticCurveTo(x+T/2, y-6, x+T-8, y+10); ctx.lineTo(x+T-3, y+T); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.fillRect(x+12, y+12, 4, 14);
-    return;
-  }
-  ctx.fillStyle = L.spike; ctx.strokeStyle = L.spikeEdge; ctx.lineWidth = 3;
-  ctx.shadowColor = L.spike; ctx.shadowBlur = L.key === "estomago" ? 16 : 6;
-  ctx.beginPath(); ctx.moveTo(x+2, y+T); ctx.lineTo(x+T/2, y+2); ctx.lineTo(x+T-2, y+T); ctx.closePath(); ctx.fill(); ctx.stroke();
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = "rgba(255,255,255,.45)"; ctx.beginPath(); ctx.moveTo(x+T/2, y+8); ctx.lineTo(x+T/2-5, y+T-6); ctx.lineTo(x+T/2, y+T-6); ctx.closePath(); ctx.fill();
-}
-function drawBlock(L, it, sx){
-  ctx.fillStyle = L.block; ctx.strokeStyle = L.blockEdge; ctx.lineWidth = 3;
-  roundRect(ctx, sx+1.5, it.y+1.5, it.w-3, it.h-1.5, 8); ctx.fill(); ctx.stroke();
-  ctx.strokeStyle = "rgba(255,255,255,.18)"; ctx.lineWidth = 2;
-  for (let gx = sx + T; gx < sx + it.w - 2; gx += T){ ctx.beginPath(); ctx.moveTo(gx, it.y+6); ctx.lineTo(gx, it.y+it.h-4); ctx.stroke(); }
-  for (let gy = it.y + T; gy < it.y + it.h - 2; gy += T){ ctx.beginPath(); ctx.moveTo(sx+6, gy); ctx.lineTo(sx+it.w-6, gy); ctx.stroke(); }
-  ctx.fillStyle = "rgba(255,255,255,.25)"; roundRect(ctx, sx+6, it.y+5, it.w-12, 5, 3); ctx.fill();
-}
-function drawPortal(it, sx, t){
-  const cx = sx + it.w/2, cy = it.y + it.h/2;
-  ctx.save();
-  ctx.shadowColor = "#46c8ff"; ctx.shadowBlur = 25;
-  ctx.lineWidth = 10; ctx.strokeStyle = it.done ? "rgba(70,200,255,.3)" : "#46c8ff";
-  ctx.beginPath(); ctx.ellipse(cx, cy, it.w/2, it.h/2, 0, 0, Math.PI*2); ctx.stroke();
-  ctx.lineWidth = 4; ctx.strokeStyle = "#fff7ee";
-  ctx.beginPath(); ctx.ellipse(cx, cy, it.w/2 - 10, it.h/2 - 10, 0, t*3, t*3 + Math.PI*1.3); ctx.stroke();
-  ctx.shadowBlur = 0;
-  if (!it.done){
-    ctx.fillStyle = "rgba(70,200,255,.18)"; ctx.beginPath(); ctx.ellipse(cx, cy, it.w/2-6, it.h/2-6, 0, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = "#fff7ee"; ctx.font = "800 64px 'Baloo 2', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText("?", cx, cy + Math.sin(t*4)*6 + 4);
-  }
-  ctx.restore();
-}
-function drawGoal(it, sx, t){
-  ctx.save();
-  ctx.fillStyle = "#1b0f2e"; roundRect(ctx, sx, it.y, it.w, it.h, 45); ctx.fill();
-  ctx.lineWidth = 8; ctx.strokeStyle = "#ffc93c"; ctx.shadowColor = "#ffc93c"; ctx.shadowBlur = 20 + Math.sin(t*5)*8;
-  roundRect(ctx, sx, it.y, it.w, it.h, 45); ctx.stroke(); ctx.shadowBlur = 0;
-  ctx.fillStyle = "#ffc93c"; ctx.font = "800 22px 'Baloo 2', sans-serif"; ctx.textAlign = "center";
-  const next = LEVELS[game.level+1];
-  ctx.fillText(next ? "SIGUIENTE" : "SALIDA", sx + it.w/2, it.y - 34);
-  ctx.font = "34px sans-serif"; ctx.fillText(next ? next.emoji : "🚽", sx + it.w/2, it.y - 2);
-  ctx.restore();
-}
-function drawCoin(it, sx, t){
-  // a drop of the digestive juice of this organ (or a good bacterium in the large intestine)
-  const c = LEVELS[game.level].collect, v = coinVariant(it), col = c.colors[v % c.colors.length];
-  ctx.save(); ctx.translate(sx, it.y + Math.sin(t*5 + it.x*0.05)*3);
-  ctx.shadowColor = col; ctx.shadowBlur = 12; ctx.fillStyle = col; ctx.strokeStyle = "rgba(27,15,46,.55)"; ctx.lineWidth = 2;
-  if (c.bacteria){
-    ctx.rotate(Math.sin(t*3 + it.x)*0.3);
-    roundRect(ctx, -15, -9, 30, 18, 9); ctx.fill(); ctx.stroke();
-    ctx.shadowBlur = 0; ctx.strokeStyle = col; ctx.lineWidth = 2;
-    for (const sgn of [-1,1]){ ctx.beginPath(); ctx.moveTo(sgn*15, 0); ctx.quadraticCurveTo(sgn*21, Math.sin(t*10)*5, sgn*24, 0); ctx.stroke(); }
-  } else {
-    ctx.beginPath(); ctx.moveTo(0,-16); ctx.bezierCurveTo(6,-7,11,-1,11,4); ctx.arc(0,4,11,0,Math.PI); ctx.bezierCurveTo(-11,-1,-6,-7,0,-16); ctx.closePath();
-    ctx.fill(); ctx.stroke();
-    ctx.shadowBlur = 0; ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.beginPath(); ctx.ellipse(-5,-1,2.2,4,0.4,0,Math.PI*2); ctx.fill();
-  }
-  ctx.shadowBlur = 0; ctx.fillStyle = "#1b0f2e";
-  ctx.beginPath(); ctx.arc(-3.5, c.bacteria ? -2 : 4, 1.8, 0, 7); ctx.arc(3.5, c.bacteria ? -2 : 4, 1.8, 0, 7); ctx.fill();
-  ctx.strokeStyle = "#1b0f2e"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, c.bacteria ? 1 : 7, 3, 0.3, Math.PI-0.3); ctx.stroke();
-  ctx.restore();
-}
-function drawHeart(it, sx, t){
-  ctx.save(); ctx.translate(sx, it.y + Math.sin(t*4)*5);
-  const s = 1 + Math.sin(t*6)*0.08; ctx.scale(s,s);
-  ctx.shadowColor = "#ff5d6e"; ctx.shadowBlur = 18; ctx.fillStyle = "#ff3b4e";
-  ctx.beginPath(); ctx.moveTo(0,14); ctx.bezierCurveTo(-22,0,-14,-18,0,-7); ctx.bezierCurveTo(14,-18,22,0,0,14); ctx.fill();
-  ctx.shadowBlur = 0; ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.beginPath(); ctx.ellipse(-7,-5,2.5,4,0.6,0,Math.PI*2); ctx.fill();
-  ctx.restore();
-}
-function drawPlayer(L, sx, y, rot, t){
-  const p = player;
-  // trail
-  for (const q of trail){ const a = q.life/0.35; ctx.fillStyle = `rgba(255,240,200,${a*0.35})`; ctx.beginPath(); ctx.arc(q.x - game.cam, q.y, 14*a, 0, 7); ctx.fill(); }
-  if (p.inv > 0 && Math.floor(p.inv*12) % 2 === 0) return;
-  const r = S/2, cx = sx + r, cy = y + r;
-  ctx.save(); ctx.translate(cx, cy + p.squash*4);
-  ctx.scale(1 + p.squash*0.18, 1 - p.squash*0.18);
-  ctx.rotate(rot);
-  ctx.fillStyle = L.player; ctx.strokeStyle = "#5a3412"; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = "rgba(0,0,0,.12)"; ctx.beginPath(); ctx.arc(-9,-8,3,0,7); ctx.arc(9,10,3.5,0,7); ctx.fill();
-  ctx.fillStyle = "#8bc34a"; ctx.beginPath(); ctx.arc(10,-7,2.2,0,7); ctx.fill();
-  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(-5,-3,4.5,5.5,0,0,7); ctx.ellipse(6,-3,4.5,5.5,0,0,7); ctx.fill();
-  ctx.fillStyle = "#1b0f2e"; ctx.beginPath(); ctx.arc(-4,-2,2.4,0,7); ctx.arc(7,-2,2.4,0,7); ctx.fill();
-  ctx.strokeStyle = "#4a2a10"; ctx.lineWidth = 2.5; ctx.beginPath();
-  if (p.grounded) ctx.arc(1, 5, 5, 0.2, Math.PI-0.2); else { ctx.ellipse(1, 8, 3, 3.5, 0, 0, 7); }
-  ctx.stroke();
-  ctx.restore();
-}
-function render(){
-  const L = LEVELS[Math.min(game.level, LEVELS.length-1)];
-  const t = game.t, cam = game.cam;
-  ctx.save();
-  if (game.shake > 0) ctx.translate(rnd(-game.shake, game.shake), rnd(-game.shake, game.shake));
-  drawBackground(L, cam, t);
-  drawGround(L, cam);
-  if (game.state !== "menu"){
-    for (const it of game.items){
-      const sx = it.x - cam;
-      if (sx > W + 120) break;
-      if (sx + (it.w||40) < -120) continue;
-      if (it.type === "spike") drawSpike(L, sx, it.y);
-      else if (it.type === "block") drawBlock(L, it, sx);
-      else if (it.type === "portal") drawPortal(it, sx, t);
-      else if (it.type === "goal") drawGoal(it, sx, t);
-      else if (it.type === "coin" && !it.done) drawCoin(it, sx, t);
-      else if (it.type === "heart" && !it.done) drawHeart(it, sx, t);
-    }
-    drawPlayer(L, player.x - cam, player.y, player.rot, t);
-  } else {
-    // menu: Bolo bouncing in place
-    const by = GROUND - S - Math.abs(Math.sin(t*3))*90;
-    const saved = {...player};
-    player.grounded = by > GROUND - S - 4; player.inv = 0; player.squash = 0;
-    drawPlayer(L, PX, by, t*6, t);
-    Object.assign(player, saved);
-  }
-  for (const q of particles){ ctx.globalAlpha = Math.max(0, q.life/q.max); ctx.fillStyle = q.c; ctx.fillRect(q.x - cam - q.s/2, q.y - q.s/2, q.s, q.s); }
-  ctx.font = "800 18px 'Baloo 2', sans-serif"; ctx.textAlign = "center";
-  for (const q of popups){ ctx.globalAlpha = Math.min(1, q.life*2); ctx.lineWidth = 4; ctx.strokeStyle = "#1b0f2e"; ctx.strokeText(q.text, q.x - cam, q.y); ctx.fillStyle = q.c; ctx.fillText(q.text, q.x - cam, q.y); }
-  ctx.globalAlpha = 1;
-  ctx.restore();
-
-  fx.clearRect(0,0,W,H);
-  for (const c of confetti){ fx.save(); fx.translate(c.x, c.y); fx.rotate(c.rot); fx.globalAlpha = Math.min(1, c.life); fx.fillStyle = c.c; fx.fillRect(-c.w/2,-c.h/2,c.w,c.h); fx.restore(); }
-}
-
-/* ================= LOOP ================= */
-let last = performance.now(), acc = 0;
-const DT = 1/120;
-function frame(now){
-  acc += Math.min(0.1, (now - last)/1000); last = now;
-  while (acc >= DT){ step(DT); acc -= DT; }
-  render();
-  requestAnimationFrame(frame);
-}
-
-/* ================= INPUT ================= */
-function press(){ initAudio(); if (game.state === "play"){ input.held = true; input.buffer = 0.14; } }
-function release(){ input.held = false; }
-$("stage").addEventListener("pointerdown", e => {
-  if (e.target.closest("button, input, .card")) return;
-  e.preventDefault(); press();
-});
-window.addEventListener("pointerup", release);
-window.addEventListener("pointercancel", release);
-window.addEventListener("keydown", e => {
-  const k = e.key;
-  if (document.activeElement && document.activeElement.tagName === "INPUT") return;
-  if (game.state === "play"){
-    if (k === " " || k === "ArrowUp" || k === "w" || k === "W"){ e.preventDefault(); if (!e.repeat) press(); else input.held = true; }
-    if (k === "Escape" || k === "p" || k === "P") pauseGame();
-  } else if (game.state === "quiz"){
-    const map = {"1":0,"2":1,"3":2,"4":3,"a":0,"b":1,"c":2,"d":3};
-    if (!answered && map[k.toLowerCase()] !== undefined){ e.preventDefault(); answer(map[k.toLowerCase()]); }
-    else if (answered && (k === "Enter" || k === " ")){ e.preventDefault(); closeQuiz(); }
-  } else if (game.state === "paused"){
-    if (k === "Escape" || k === "p" || k === "P"){ e.preventDefault(); resumeGame(); }
-  }
-  if (k === "m" || k === "M") setMuted(!muted);
-});
-window.addEventListener("keyup", e => { if (e.key === " " || e.key === "ArrowUp" || e.key === "w" || e.key === "W") release(); });
-document.addEventListener("visibilitychange", () => { if (document.hidden) pauseGame(); });
-window.addEventListener("blur", () => pauseGame());
-
-$("playBtn").onclick = startGame;
-$("goBtn").onclick = beginRun;
-$("contBtn").onclick = closeQuiz;
-$("pauseBtn").onclick = () => game.state === "paused" ? resumeGame() : pauseGame();
-$("resumeBtn").onclick = resumeGame;
-$("quitBtn").onclick = toMenu;
-$("muteBtn").onclick = () => { initAudio(); setMuted(!muted); };
-$("helpBtn").onclick = () => { initAudio(); sfx.click(); show("help"); };
-$("recBtn").onclick = () => { initAudio(); sfx.click(); renderRecords(); show("records"); };
-document.querySelectorAll("[data-back]").forEach(b => b.onclick = () => { sfx.click(); show("menu"); });
-$("againBtn").onclick = startGame;
-$("menuBtn").onclick = toMenu;
-$("saveForm").addEventListener("submit", e => {
-  e.preventDefault();
-  const name = $("nameIn").value.trim().slice(0,12);
-  const pos = saveRecord(name);
-  $("saveForm").hidden = true;
-  sfx.coin();
-  renderRecords(pos); show("records");
-});
-const setDiff = easy => { game.easy = easy; $("dEasy").setAttribute("aria-pressed", easy); $("dNormal").setAttribute("aria-pressed", !easy); store.set("vb.easy", easy); };
-$("dEasy").onclick = () => setDiff(true);
-$("dNormal").onclick = () => setDiff(false);
-
-/* ================= SCALE ================= */
-function fit(){
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const s = Math.min(vw/960, vh/540);
-  const st = $("stage");
-  st.style.width = (960*s) + "px"; st.style.height = (540*s) + "px";
-  st.style.fontSize = (16*s) + "px";
-  st.style.borderRadius = s < 0.7 ? "0" : "";
-}
-window.addEventListener("resize", fit);
-
-/* ================= BOOT ================= */
-setDiff(store.get("vb.easy", true));
-setMuted(muted);
-$("menuMascot").innerHTML = boloSVG("happy");
-fit();
-requestAnimationFrame(frame);
-</script>
+  <script type="module" src="src/main.js"></script>
 </body>
 </html>

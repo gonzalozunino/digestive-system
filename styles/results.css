@@ -1,0 +1,12 @@
+/* End-of-game card and the records table. */
+.results-card { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 1.2em; }
+.results-card__score { font-size: 1.6em; font-weight: 800; color: var(--sun); }
+
+.records__scroll { max-height: 15em; overflow: auto; }
+.records { width: 100%; border-collapse: collapse; font-size: 1.05em; font-variant-numeric: tabular-nums; }
+.records th, .records td { padding: 0.25em 0.5em; text-align: left; }
+.records th { font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.records tr:nth-child(even) td { background: rgba(255, 255, 255, 0.04); }
+.records .records__number { text-align: right; }
+.records__row--mine td { background: rgba(182, 240, 90, 0.18) !important; }
+.records__empty { color: var(--muted); }

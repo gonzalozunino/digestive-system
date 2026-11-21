@@ -1,0 +1,32 @@
+/* Design tokens. The game uses a single dark arcade look on purpose. */
+:root {
+  --ink: #1b0f2e;
+  --night: #12081f;
+  --paper: #fff7ee;
+  --panel: #2d1a4a;
+  --panel-edge: #3b2563;
+  --panel-shadow: #150a26;
+  --muted: #c9b8e8;
+  --soft-text: #e9defc;
+  --accent-say: #7a4fc4;
+
+  --pink: #ff5d8f;
+  --lime: #b6f05a;
+  --lime-shadow: #5e8f1f;
+  --sun: #ffc93c;
+  --sky: #46c8ff;
+  --ok: #3ddc84;
+  --ok-shadow: #1d8a4f;
+  --bad: #ff4d5e;
+  --bad-shadow: #a1222f;
+
+  /* Answer button colors (1-4) */
+  --answer-1: #46c8ff; --answer-1-shadow: #1f7fae;
+  --answer-2: #ffc93c; --answer-2-shadow: #b5861a;
+  --answer-3: #ff5d8f; --answer-3-shadow: #a8325a;
+  --answer-4: #b6f05a; --answer-4-shadow: #6e9a2a;
+
+  --font-display: "Baloo 2", "Trebuchet MS", "Comic Sans MS", system-ui, sans-serif;
+  --radius: 0.8em;
+  color-scheme: dark;
+}
