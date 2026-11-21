@@ -138,7 +138,7 @@ input[type=text]{font-family:inherit;font-size:1.2em;font-weight:700;padding:.35
       <div class="mascot bounce" id="menuMascot"></div>
       <div style="display:grid;gap:.7em">
         <h1>El Viaje<br>de Bolo</h1>
-        <p class="muted" style="font-size:1.1em">Eres <b style="color:var(--sun)">Bolo</b>, un bocado de comida. Viaja por todo el sistema digestivo: salta obstáculos, junta vitaminas y responde las preguntas de los portales <b style="color:var(--sky)">?</b></p>
+        <p class="muted" style="font-size:1.1em">Eres <b style="color:var(--sun)">Bolo</b>, un bocado de comida. Viaja por todo el sistema digestivo: salta obstáculos, junta jugos digestivos y responde las preguntas de los portales <b style="color:var(--sky)">?</b></p>
         <div class="row">
           <span class="muted" style="font-weight:700">Dificultad:</span>
           <div class="seg" role="group" aria-label="Dificultad">
@@ -161,7 +161,7 @@ input[type=text]{font-family:inherit;font-size:1.2em;font-weight:700;padding:.35
       <h2>Cómo jugar</h2>
       <p>🦘 <b>Saltar:</b> toca la pantalla, haz clic o pulsa <span class="kbd">Espacio</span> / <span class="kbd">↑</span>. Mantén pulsado para saltar seguido.</p>
       <p>🦷 <b>Esquiva</b> los pinchos y cajas. Si chocas pierdes un corazón ❤️.</p>
-      <p>💊 <b>Junta vitaminas</b> para ganar puntos y 🍎 manzanas para recuperar vida.</p>
+      <p>💧 <b>Junta jugos digestivos</b> (saliva, jugo gástrico, bilis…): te ayudan a digerirte y dan puntos. Los ❤️ corazones te devuelven una vida.</p>
       <p>❓ <b>Portales:</b> responde la pregunta (puedes usar las teclas <span class="kbd">1</span>–<span class="kbd">4</span>). Si aciertas ganas muchos puntos y las rachas dan bonus. Si fallas, pierdes un corazón.</p>
       <p>🚪 Cruza los 5 órganos: boca, esófago, estómago, intestino delgado e intestino grueso.</p>
       <div class="row"><button class="big" data-back>¡Entendido!</button></div>
@@ -176,6 +176,7 @@ input[type=text]{font-family:inherit;font-size:1.2em;font-weight:700;padding:.35
       <h2 id="lcName">La Boca</h2>
       <p id="lcText" style="font-size:1.1em"></p>
       <p class="muted" id="lcForm"></p>
+      <p id="lcCollect" style="color:var(--sky);font-weight:700"></p>
       <button class="big" id="goBtn">¡Vamos! 🚀</button>
     </div>
   </div>
@@ -246,22 +247,27 @@ const LEVELS = [
   { key:"boca", name:"La Boca", short:"Boca", emoji:"👄",
     text:"Aquí empieza la digestión: los dientes trituran la comida y la saliva la ablanda. ¡Esquiva los dientes!",
     form:"Ahora eres: un bocado de comida que se convierte en bolo alimenticio.",
+    collect:{name:"saliva", colors:["#9fe3ff"], text:"Junta 💧 gotas de saliva: ablandan la comida y empiezan a digerir el almidón del pan y el arroz."},
     bgTop:"#5a0f2a", bgBot:"#a3244b", ground:"#e35d7f", groundTop:"#ff9ab3", spike:"#fffaf0", spikeEdge:"#d9cbb4", block:"#f4e9d8", blockEdge:"#bfa98a", player:"#f3c37a", music:{root:57,bpm:126} },
   { key:"esofago", name:"El Esófago", short:"Esófago", emoji:"🌀",
     text:"Un tubo de unos 25 cm. Sus músculos te empujan hacia abajo con movimientos peristálticos.",
     form:"Ahora eres: el bolo alimenticio, deslizándote hacia el estómago.",
+    collect:{name:"moco", colors:["#d6f5a0"], text:"Junta 💧 gotas de moco: cubren el esófago para que resbales más fácil hacia abajo."},
     bgTop:"#5c2306", bgBot:"#b4521b", ground:"#d9783a", groundTop:"#ffb27a", spike:"#ffd9a8", spikeEdge:"#c98745", block:"#8a3a12", blockEdge:"#ffb27a", player:"#e9b36a", music:{root:55,bpm:132} },
   { key:"estomago", name:"El Estómago", short:"Estómago", emoji:"🧪",
     text:"¡Cuidado con el ácido! El jugo gástrico mezcla y deshace la comida durante horas.",
     form:"Ahora eres: quimo, una papilla espesa y ácida.",
+    collect:{name:"jugo gástrico", colors:["#e8ff3a"], text:"Junta 💧 gotas de jugo gástrico: su ácido y sus enzimas deshacen las proteínas."},
     bgTop:"#1d3a0c", bgBot:"#4f7d14", ground:"#9acd32", groundTop:"#e4ff7a", spike:"#d8ff3a", spikeEdge:"#7aa312", block:"#3d5f10", blockEdge:"#c7f25a", player:"#c9d36b", music:{root:52,bpm:138} },
   { key:"delgado", name:"El Intestino Delgado", short:"Int. delgado", emoji:"🪱",
     text:"¡Unos 6 metros de curvas! Aquí los nutrientes pasan a la sangre gracias a las vellosidades.",
     form:"Ahora eres: quilo, un líquido lleno de nutrientes.",
+    collect:{name:"bilis", name2:"jugo pancreático", colors:["#8fd14f","#ffa54a"], text:"Junta 💧 bilis (verde, del hígado) y jugo pancreático (naranja, del páncreas): terminan de digerir todo."},
     bgTop:"#3a0f4f", bgBot:"#7d2f8f", ground:"#c45bd6", groundTop:"#f3a6ff", spike:"#ffc2f3", spikeEdge:"#b45fb0", block:"#5a1f6e", blockEdge:"#f3a6ff", player:"#f0d9a0", music:{root:54,bpm:144} },
   { key:"grueso", name:"El Intestino Grueso", short:"Int. grueso", emoji:"🦠",
     text:"Última parada: aquí se absorbe el agua y las bacterias buenas ayudan. ¡Prepárate para la salida!",
     form:"Ahora eres: restos que no sirven… ¡futuras heces! 💩",
+    collect:{name:"bacterias buenas", bacteria:true, colors:["#7ed957","#6fc3ff","#ff9ecb"], text:"Junta 🦠 bacterias buenas: ayudan a digerir la fibra y fabrican algunas vitaminas."},
     bgTop:"#2e1a0b", bgBot:"#6b4320", ground:"#9b6a3c", groundTop:"#e0ac74", spike:"#f5d0a0", spikeEdge:"#a8743f", block:"#4a2c12", blockEdge:"#e0ac74", player:"#a8743f", music:{root:50,bpm:150} },
 ];
 
@@ -452,7 +458,8 @@ const game = {
 };
 const player = { x:0, y:GROUND-S, vy:0, grounded:true, rot:0, inv:0, squash:0 };
 const input = { held:false, buffer:0 };
-let particles = [], confetti = [], trail = [];
+let particles = [], confetti = [], trail = [], popups = [];
+const coinVariant = it => Math.abs(Math.round(it.x / 36));
 
 /* --- level generation --- */
 const spike = x => ({type:"spike", x, y:GROUND-T, w:T, h:T});
@@ -519,12 +526,13 @@ function showLevelCard(){
   genLevel(game.level);
   game.speed = (400 + game.level*38) * (game.easy ? 0.85 : 1);
   Object.assign(player, {x:0, y:GROUND-S, vy:0, grounded:true, rot:0, inv:0});
-  game.qn = 0; game.cam = 0; particles = []; trail = [];
+  game.qn = 0; game.cam = 0; particles = []; trail = []; popups = [];
   $("lcStep").textContent = `Parada ${game.level+1} de 5`;
   $("lcEmoji").textContent = L.emoji;
   $("lcName").textContent = L.name;
   $("lcText").textContent = L.text;
   $("lcForm").textContent = L.form;
+  $("lcCollect").textContent = L.collect.text;
   updateHUD();
   $("hud").hidden = false;
   show("levelcard");
@@ -709,7 +717,7 @@ function step(dt){
       const cx = p.x + S/2, cy = p.y + S/2;
       if (Math.hypot(cx - it.x, cy - it.y) < it.r + S/2){
         it.done = true;
-        if (it.type === "coin"){ game.score += 10; sfx.coin(); sparkle(it.x, it.y, "#ffe066"); }
+        if (it.type === "coin"){ const c = LEVELS[game.level].collect, v = coinVariant(it); game.score += 10; sfx.coin(); sparkle(it.x, it.y, c.colors[v % c.colors.length]); popups.push({x:it.x, y:it.y-20, life:.8, text:"+10 " + (v % 2 && c.name2 ? c.name2 : c.name), c:c.colors[v % c.colors.length]}); }
         else { if (game.hearts < game.maxHearts) game.hearts++; else game.score += 50; sfx.heart(); sparkle(it.x, it.y, "#ff5d6e", 20); }
         updateHUD();
       }
@@ -735,6 +743,8 @@ function step(dt){
 function updateParticles(dt){
   for (const q of particles){ q.x += q.vx*dt; q.y += q.vy*dt; q.vy += 900*dt; q.life -= dt; }
   particles = particles.filter(q => q.life > 0);
+  for (const q of popups){ q.y -= 60*dt; q.life -= dt; }
+  popups = popups.filter(q => q.life > 0);
   for (const q of trail) q.life -= dt;
   trail = trail.filter(q => q.life > 0);
   for (const c of confetti){ c.x += c.vx*dt; c.y += c.vy*dt; c.vy += 500*dt; c.vx *= 0.99; c.rot += c.vr*dt; c.life -= dt; }
@@ -801,8 +811,8 @@ function drawBackground(L, cam, t){
       const x = mod(i*130 - cam*0.45 + Math.sin(t+i)*20, W+120) - 60, y = 120 + (i*67)%220 + Math.sin(t*1.5+i*2)*12;
       const col = ["#7ed957","#ffb347","#6fc3ff","#ff7eb6"][i%4];
       ctx.save(); ctx.translate(x,y); ctx.rotate(Math.sin(t+i)*0.3);
-      ctx.fillStyle = col; ctx.globalAlpha = .55; roundRect(ctx,-20,-10,40,20,10); ctx.fill();
-      ctx.globalAlpha = .8; ctx.fillStyle = "#2e1a0b";
+      ctx.fillStyle = col; ctx.globalAlpha = .3; roundRect(ctx,-20,-10,40,20,10); ctx.fill();
+      ctx.globalAlpha = .45; ctx.fillStyle = "#2e1a0b";
       ctx.beginPath(); ctx.arc(-6,-2,2.4,0,7); ctx.arc(6,-2,2.4,0,7); ctx.fill();
       ctx.strokeStyle = "#2e1a0b"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(0,2,5,0.2,Math.PI-0.2); ctx.stroke();
       ctx.restore();
@@ -867,24 +877,31 @@ function drawGoal(it, sx, t){
   ctx.restore();
 }
 function drawCoin(it, sx, t){
-  // a vitamin capsule
-  ctx.save(); ctx.translate(sx, it.y + Math.sin(t*5 + it.x*0.05)*3); ctx.rotate(Math.PI/4 + Math.sin(t*3+it.x)*0.2);
-  ctx.shadowColor = "#ffe066"; ctx.shadowBlur = 10;
-  ctx.fillStyle = "#ffc93c"; roundRect(ctx, -8, -16, 16, 16, 8); ctx.fill();
-  ctx.fillStyle = "#ff5d8f"; roundRect(ctx, -8, 0, 16, 16, 8); ctx.fill();
-  ctx.fillRect(-8, 0, 16, 5);
-  ctx.shadowBlur = 0; ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.fillRect(-4, -12, 3, 8);
+  // a drop of the digestive juice of this organ (or a good bacterium in the large intestine)
+  const c = LEVELS[game.level].collect, v = coinVariant(it), col = c.colors[v % c.colors.length];
+  ctx.save(); ctx.translate(sx, it.y + Math.sin(t*5 + it.x*0.05)*3);
+  ctx.shadowColor = col; ctx.shadowBlur = 12; ctx.fillStyle = col; ctx.strokeStyle = "rgba(27,15,46,.55)"; ctx.lineWidth = 2;
+  if (c.bacteria){
+    ctx.rotate(Math.sin(t*3 + it.x)*0.3);
+    roundRect(ctx, -15, -9, 30, 18, 9); ctx.fill(); ctx.stroke();
+    ctx.shadowBlur = 0; ctx.strokeStyle = col; ctx.lineWidth = 2;
+    for (const sgn of [-1,1]){ ctx.beginPath(); ctx.moveTo(sgn*15, 0); ctx.quadraticCurveTo(sgn*21, Math.sin(t*10)*5, sgn*24, 0); ctx.stroke(); }
+  } else {
+    ctx.beginPath(); ctx.moveTo(0,-16); ctx.bezierCurveTo(6,-7,11,-1,11,4); ctx.arc(0,4,11,0,Math.PI); ctx.bezierCurveTo(-11,-1,-6,-7,0,-16); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.shadowBlur = 0; ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.beginPath(); ctx.ellipse(-5,-1,2.2,4,0.4,0,Math.PI*2); ctx.fill();
+  }
+  ctx.shadowBlur = 0; ctx.fillStyle = "#1b0f2e";
+  ctx.beginPath(); ctx.arc(-3.5, c.bacteria ? -2 : 4, 1.8, 0, 7); ctx.arc(3.5, c.bacteria ? -2 : 4, 1.8, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#1b0f2e"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, c.bacteria ? 1 : 7, 3, 0.3, Math.PI-0.3); ctx.stroke();
   ctx.restore();
 }
 function drawHeart(it, sx, t){
   ctx.save(); ctx.translate(sx, it.y + Math.sin(t*4)*5);
-  const s = 1 + Math.sin(t*6)*0.06; ctx.scale(s,s);
-  ctx.shadowColor = "#ff5d6e"; ctx.shadowBlur = 18;
-  ctx.fillStyle = "#ff3b4e"; ctx.beginPath(); ctx.arc(0, 2, 15, 0, Math.PI*2); ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = "#6b3a12"; ctx.fillRect(-1.5, -18, 3, 8);
-  ctx.fillStyle = "#7ed957"; ctx.beginPath(); ctx.ellipse(7, -14, 7, 3.5, -0.5, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.beginPath(); ctx.ellipse(-6, -3, 3, 5, 0.5, 0, Math.PI*2); ctx.fill();
+  const s = 1 + Math.sin(t*6)*0.08; ctx.scale(s,s);
+  ctx.shadowColor = "#ff5d6e"; ctx.shadowBlur = 18; ctx.fillStyle = "#ff3b4e";
+  ctx.beginPath(); ctx.moveTo(0,14); ctx.bezierCurveTo(-22,0,-14,-18,0,-7); ctx.bezierCurveTo(14,-18,22,0,0,14); ctx.fill();
+  ctx.shadowBlur = 0; ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.beginPath(); ctx.ellipse(-7,-5,2.5,4,0.6,0,Math.PI*2); ctx.fill();
   ctx.restore();
 }
 function drawPlayer(L, sx, y, rot, t){
@@ -936,6 +953,8 @@ function render(){
     Object.assign(player, saved);
   }
   for (const q of particles){ ctx.globalAlpha = Math.max(0, q.life/q.max); ctx.fillStyle = q.c; ctx.fillRect(q.x - cam - q.s/2, q.y - q.s/2, q.s, q.s); }
+  ctx.font = "800 18px 'Baloo 2', sans-serif"; ctx.textAlign = "center";
+  for (const q of popups){ ctx.globalAlpha = Math.min(1, q.life*2); ctx.lineWidth = 4; ctx.strokeStyle = "#1b0f2e"; ctx.strokeText(q.text, q.x - cam, q.y); ctx.fillStyle = q.c; ctx.fillText(q.text, q.x - cam, q.y); }
   ctx.globalAlpha = 1;
   ctx.restore();
 

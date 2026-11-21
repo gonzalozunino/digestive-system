@@ -3,7 +3,7 @@
 Juego de trivia en español sobre el sistema digestivo, para niños de unos 11 años.
 
 Eres **Bolo**, un bocado de comida que recorre boca → esófago → estómago → intestino delgado → intestino grueso.
-Salta obstáculos al ritmo de la música, junta vitaminas y responde las preguntas de los portales.
+Salta obstáculos al ritmo de la música, junta los jugos digestivos de cada órgano y responde las preguntas de los portales.
 
 **Jugar:** abre `index.html` en cualquier navegador (computadora, tablet o celular). No necesita instalación.
 
