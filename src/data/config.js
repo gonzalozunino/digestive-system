@@ -13,6 +13,7 @@ export const WORLD = {
 export const PHYSICS = {
   gravity: 2700,
   jumpVelocity: 770,   // ~110px high, ~0.57s in the air
+  padVelocity: 1000,   // jump pads launch ~185px high
   jumpBuffer: 0.14,    // a jump pressed slightly before landing still counts
   airSpinTime: 0.57,   // one full turn per jump
   fixedStep: 1 / 120,
@@ -28,24 +29,29 @@ export const PLAYER = {
   blockSideInset: 2,
 };
 
-// obstacleBoost: how many stages ahead the obstacle mix starts (harder patterns earlier).
+/**
+ * Level difficulties, easiest first. Every level has one (topics set `difficulty` on each level).
+ *   hearts       lives at the start          speedFactor  x SPEED.base
+ *   gapTiles     space between patterns      patterns     obstacle patterns before each question
+ *   questions    question portals            musicTempo   x the level's music tempo
+ * Which obstacle patterns appear is set in data/obstaclePatterns.js (OBSTACLE_POOLS).
+ */
 export const DIFFICULTY = {
-  easy:   { hearts: 5, speedFactor: 0.85, gapTiles: [6, 9],   musicTempo: 0.92, obstacleBoost: 0 },
-  normal: { hearts: 3, speedFactor: 1,    gapTiles: [5, 8],   musicTempo: 1,    obstacleBoost: 0 },
-  hard:   { hearts: 2, speedFactor: 1.15, gapTiles: [5, 7.5], musicTempo: 1.08, obstacleBoost: 1 },
+  facil:         { hearts: 5, speedFactor: 0.85, gapTiles: [6, 9],     patterns: 4, questions: 3, musicTempo: 0.92 },
+  normal:        { hearts: 4, speedFactor: 0.95, gapTiles: [5.5, 8.5], patterns: 5, questions: 3, musicTempo: 1 },
+  dificil:       { hearts: 3, speedFactor: 1.05, gapTiles: [5, 8],     patterns: 5, questions: 3, musicTempo: 1.04 },
+  "muy-dificil": { hearts: 3, speedFactor: 1.12, gapTiles: [5, 7.5],   patterns: 6, questions: 4, musicTempo: 1.08 },
+  extremo:       { hearts: 2, speedFactor: 1.2,  gapTiles: [5, 7],     patterns: 6, questions: 4, musicTempo: 1.12 },
+  demonio:       { hearts: 2, speedFactor: 1.28, gapTiles: [5.5, 7],   patterns: 7, questions: 5, musicTempo: 1.16 },
 };
-export const DEFAULT_DIFFICULTY = "easy";
+export const DIFFICULTY_ORDER = Object.keys(DIFFICULTY);
 
-// Speed grows with each stage, up to `maxStageSteps` stages (topics may have many stages).
-export const SPEED = { base: 400, perStage: 38, maxStageSteps: 4 };
+export const SPEED = { base: 400 };
 
-/** How a stage is laid out along the x axis (px unless noted). */
+/** How a level is laid out along the x axis (px unless noted). */
 export const LAYOUT = {
   startX: 700,
-  questionsPerStage: 3,
-  patternsBeforeQuestion: 4,   // + stage index + question index
-  patternsBeforeGoal: 4,       // + stage index
-  gapShrinkPerStage: 0.04,
+  extraPatternsPerSection: 1,  // each section between questions gets this many more patterns than the last
   beforePortal: 160,
   afterPortal: 560,            // obstacle-free run after a question
   heartAfterQuestion: 1,       // which question is followed by a heart pickup (0-based)
@@ -54,6 +60,7 @@ export const LAYOUT = {
 };
 
 export const ITEM_SIZES = {
+  pad: { w: 40, h: 10 },
   collectibleRadius: 11,
   heartRadius: 15,
   heartLift: 70,
@@ -66,7 +73,7 @@ export const SCORING = {
   heartWhenFull: 50,
   correctAnswer: 100,
   streakBonus: 50,     // extra points per answer already in the streak
-  stageComplete: 200,
+  levelComplete: 200,
 };
 
 export const TIMING = {
@@ -74,24 +81,23 @@ export const TIMING = {
   hitShake: 14,
   wrongAnswerShake: 10,
   deathDelay: 0.9,
-  nextStageDelay: 0.9,
   victoryDelay: 0.7,
 };
 
 export const QUIZ = {
-  sequenceQuestionChance: 0.35,  // chance the general slot uses a generated sequence/category question
+  sequenceQuestionChance: 0.35,  // in levels with general questions: chance of a generated sequence/category one
 };
 
 export const RECORDS = { max: 10, nameMaxLength: 12 };
 
 export const AUDIO = { masterVolume: 0.8, musicVolume: 0.32, sfxVolume: 0.6 };
 
-/** Preferences are shared by all topics; records and question history are kept per topic. */
+/** Preferences are shared by all topics; records, level progress and question history are per topic. */
 export const STORAGE_KEYS = {
   muted: "tr.muted",
-  difficulty: "tr.difficulty",
   character: "tr.character",
   lastName: "tr.lastName",
-  records: topicId => `tr.${topicId}.records`,
+  records: topicId => `tr.${topicId}.records.v2`,
+  progress: topicId => `tr.${topicId}.progress`,
   seenQuestions: topicId => `tr.${topicId}.seen`,
 };

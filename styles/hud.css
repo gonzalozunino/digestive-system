@@ -4,7 +4,8 @@
   padding: 0.15em 0.8em; border: 2px solid rgba(255, 255, 255, 0.18); border-radius: 999px;
   background: rgba(18, 8, 31, 0.72); font-size: 1.05em; font-weight: 800; white-space: nowrap; letter-spacing: 0.05em;
 }
-.hud__pill--stage { color: var(--lime); letter-spacing: 0; }
+.hud__pill--level { color: var(--lime); letter-spacing: 0; }
+.hud__pill--percent { min-width: 3.6em; text-align: center; font-variant-numeric: tabular-nums; letter-spacing: 0; }
 .hud__pill--score { color: var(--sun); font-variant-numeric: tabular-nums; letter-spacing: 0; }
 .hud__progress {
   --progress: 0; position: relative; flex: 1; min-width: 4em; height: 0.8em;

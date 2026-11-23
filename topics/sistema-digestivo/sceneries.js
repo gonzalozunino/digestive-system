@@ -27,6 +27,33 @@ export const SCENERIES = {
     },
   },
 
+  /** Pharynx: the uvula swinging above and the two tunnels (air and food) in the back. */
+  throat: {
+    spikeStyle: "triangle", spikeGlow: 6,
+    colors: { skyTop: "#4a0d1f", skyBottom: "#8e2a43", ground: "#cf5470", groundEdge: "#ff9fb4",
+      spike: "#ffd6df", spikeEdge: "#c0566f", block: "#7a2338", blockEdge: "#ff9fb4" },
+    draw(ctx, camera, time) {
+      for (let i = -1; i < 6; i++) {
+        const x = wrap(i * 260 - camera * 0.2, 260 * 6) - 260;
+        ctx.fillStyle = "rgba(30,0,10,.45)";
+        ctx.beginPath(); ctx.ellipse(x + 70, GROUND, 55, 150, 0, Math.PI, 0); ctx.fill();
+        ctx.fillStyle = "rgba(60,0,20,.3)";
+        ctx.beginPath(); ctx.ellipse(x + 190, GROUND, 45, 120, 0, Math.PI, 0); ctx.fill();
+      }
+      ctx.fillStyle = "#b8395a";
+      ctx.fillRect(0, 0, W, 46);
+      for (let i = -1; i < 5; i++) {
+        const x = wrap(i * 300 - camera * 0.5, 300 * 5) - 150;
+        const swing = Math.sin(time * 2 + i) * 0.25;
+        ctx.save();
+        ctx.translate(x, 40); ctx.rotate(swing);
+        ctx.fillStyle = "#e2738e";
+        ctx.beginPath(); ctx.moveTo(-14, 0); ctx.quadraticCurveTo(-12, 70, 0, 84); ctx.quadraticCurveTo(12, 70, 14, 0); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+    },
+  },
+
   /** Esophagus: muscle rings pulsing like peristalsis. */
   rings: {
     spikeStyle: "triangle", spikeGlow: 6,

@@ -2,14 +2,14 @@
 // Build it with: npm run build -- --topic=sistema-solar
 
 const PLANETS = [
-  { id: "mercurio", name: "Mercurio", stage: "rocosos", role: "Está más cerca del Sol que todos los demás" },
-  { id: "venus", name: "Venus", stage: "rocosos", role: "Es el más caliente de todos" },
-  { id: "tierra", name: "la Tierra", stage: "rocosos", role: "Tiene agua líquida y seres vivos" },
-  { id: "marte", name: "Marte", stage: "rocosos", role: "Se ve rojo por el óxido de su suelo" },
-  { id: "jupiter", name: "Júpiter", stage: "gaseosos", categories: ["gaseous"], role: "Es el más grande de todos" },
-  { id: "saturno", name: "Saturno", stage: "gaseosos", categories: ["gaseous"], role: "Tiene los anillos más grandes y brillantes" },
-  { id: "urano", name: "Urano", stage: "gaseosos", categories: ["gaseous"], role: "Gira acostado, de costado" },
-  { id: "neptuno", name: "Neptuno", stage: "gaseosos", categories: ["gaseous"], role: "Está más lejos del Sol que todos los demás" },
+  { id: "mercurio", name: "Mercurio", level: "rocosos", role: "Está más cerca del Sol que todos los demás" },
+  { id: "venus", name: "Venus", level: "rocosos", role: "Es el más caliente de todos" },
+  { id: "tierra", name: "la Tierra", level: "rocosos", role: "Tiene agua líquida y seres vivos" },
+  { id: "marte", name: "Marte", level: "rocosos", role: "Se ve rojo por el óxido de su suelo" },
+  { id: "jupiter", name: "Júpiter", level: "gaseosos", categories: ["gaseous"], role: "Es el más grande de todos" },
+  { id: "saturno", name: "Saturno", level: "gaseosos", categories: ["gaseous"], role: "Tiene los anillos más grandes y brillantes" },
+  { id: "urano", name: "Urano", level: "gaseosos", categories: ["gaseous"], role: "Gira acostado, de costado" },
+  { id: "neptuno", name: "Neptuno", level: "gaseosos", categories: ["gaseous"], role: "Está más lejos del Sol que todos los demás" },
 ];
 
 export default {
@@ -18,9 +18,9 @@ export default {
   pitch: "Viaja desde el Sol hasta el último planeta: salta obstáculos, junta estrellas y responde las preguntas de los portales.",
   collectHelp: "Junta estrellas ⭐ para sumar puntos.",
 
-  stages: [
+  levels: [
     {
-      id: "sol", name: "El Sol", emoji: "☀️", scenery: "volcano",
+      id: "sol", name: "El Sol", emoji: "☀️", difficulty: "facil", scenery: "volcano", general: true,
       intro: "El Sol es una estrella: una enorme bola de gas muy caliente que nos da luz y calor.",
       collectible: { style: "star", names: ["estrella"], colors: ["#ffe066"], hint: "Junta ⭐ estrellas para sumar puntos." },
       questions: [
@@ -31,7 +31,7 @@ export default {
       ],
     },
     {
-      id: "rocosos", name: "Planetas rocosos", shortName: "Rocosos", emoji: "🪨", scenery: "space",
+      id: "rocosos", name: "Planetas rocosos", shortName: "Rocosos", emoji: "🪨", difficulty: "normal", scenery: "space",
       intro: "Mercurio, Venus, la Tierra y Marte: los planetas más cercanos al Sol tienen superficie de roca.",
       collectible: { style: "star", names: ["estrella"], colors: ["#ffe066"], hint: "Junta ⭐ estrellas para sumar puntos." },
       questions: [
@@ -42,7 +42,7 @@ export default {
       ],
     },
     {
-      id: "gaseosos", name: "Planetas gaseosos", shortName: "Gaseosos", emoji: "🪐", scenery: "space",
+      id: "gaseosos", name: "Planetas gaseosos", shortName: "Gaseosos", emoji: "🪐", difficulty: "dificil", scenery: "space",
       intro: "Júpiter, Saturno, Urano y Neptuno son gigantes hechos sobre todo de gases.",
       collectible: { style: "gem", names: ["cristal de hielo"], colors: ["#9fe3ff", "#c4b5fd"], hint: "Junta 💎 cristales de hielo para sumar puntos." },
       questions: [

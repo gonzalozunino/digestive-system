@@ -126,7 +126,7 @@ export const GENERIC_SCENERIES = {
   },
 };
 
-/** Order used for stages that do not choose a scenery. */
+/** Order used for levels that do not choose a scenery. */
 export const AUTO_SCENERIES = ["forest", "ocean", "cave", "volcano", "space"];
 
 export function drawSky(ctx, scenery) {

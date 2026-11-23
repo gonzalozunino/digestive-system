@@ -1,7 +1,7 @@
 // Entry point: loads the active topic, creates the modules and connects them.
 // No game rules or drawing code here.
 import topicModule from "./activeTopic.js";
-import { AUDIO, PHYSICS, STORAGE_KEYS, DEFAULT_DIFFICULTY, DIFFICULTY } from "./data/config.js";
+import { AUDIO, PHYSICS, STORAGE_KEYS } from "./data/config.js";
 import { GAME_NAME, TEXTS } from "./data/texts.js";
 import { createStorage } from "./utils/storage.js";
 import { format } from "./utils/text.js";
@@ -20,7 +20,8 @@ import { byId } from "./ui/dom.js";
 import { ScreenManager } from "./ui/ScreenManager.js";
 import { HudView } from "./ui/HudView.js";
 import { MenuView } from "./ui/MenuView.js";
-import { StageIntroView } from "./ui/StageIntroView.js";
+import { LevelSelectView } from "./ui/LevelSelectView.js";
+import { LevelIntroView } from "./ui/LevelIntroView.js";
 import { QuizView } from "./ui/QuizView.js";
 import { PauseView } from "./ui/PauseView.js";
 import { ResultsView } from "./ui/ResultsView.js";
@@ -52,11 +53,9 @@ const stage = byId("stage");
 const renderer = new Renderer(byId("game-canvas"), byId("fx-canvas"), { sceneries, character: characters[0] });
 
 /* ---------- preferences ---------- */
-const storedDifficulty = storage.get(STORAGE_KEYS.difficulty, DEFAULT_DIFFICULTY);
 const storedCharacter = storage.get(STORAGE_KEYS.character, null);
 const preferences = {
   muted: storage.get(STORAGE_KEYS.muted, false),
-  difficulty: storedDifficulty in DIFFICULTY ? storedDifficulty : DEFAULT_DIFFICULTY,
   character: characters.find(c => c.id === storedCharacter) ?? characters[0],
 };
 
@@ -65,13 +64,6 @@ function setMuted(muted) {
   storage.set(STORAGE_KEYS.muted, muted);
   audio.setMuted(muted);
   hud.setMuted(muted);
-}
-
-function setDifficulty(key) {
-  preferences.difficulty = key;
-  storage.set(STORAGE_KEYS.difficulty, key);
-  game.setDifficulty(key);
-  menu.setDifficulty(key);
 }
 
 function setCharacter(id) {
@@ -84,28 +76,36 @@ function setCharacter(id) {
 }
 
 /* ---------- views ---------- */
-const screens = new ScreenManager(["menu", "help", "stage-intro", "quiz", "pause", "results", "records"]);
+const screens = new ScreenManager(["menu", "help", "levels", "level-intro", "quiz", "pause", "results", "records"]);
 const hud = new HudView({
   onPause: () => (game.state === STATES.PAUSED ? game.resume() : game.pause()),
   onMute: () => setMuted(!preferences.muted),
 });
 const menu = new MenuView({ topic, characters }, {
-  onPlay: () => game.start(),
+  onPlay: () => showLevels(),
   onRecords: () => showRecords(),
   onHelp: () => screens.show("help"),
   onBack: () => (game.state === STATES.MENU ? screens.show("menu") : game.quit()),
-  onDifficulty: setDifficulty,
   onCharacter: setCharacter,
 });
-const stageIntro = new StageIntroView({ onStart: () => game.beginRun() });
+const levelSelect = new LevelSelectView({ onPick: index => game.start(index) });
+const levelIntro = new LevelIntroView({ onStart: () => game.beginRun() });
 const quiz = new QuizView({ onAnswer: index => game.answer(index), onContinue: () => game.continueAfterAnswer() });
-const pause = new PauseView({ onResume: () => game.resume(), onQuit: () => game.quit() });
-const records = new RecordsView(topic.stages);
+const pause = new PauseView({ onResume: () => game.resume(), onQuit: () => showLevels() });
+const records = new RecordsView(topic.levels);
 const results = new ResultsView({
   onSave: name => showRecords(game.saveRecord(name)),
-  onAgain: () => game.start(),
-  onMenu: () => game.quit(),
+  onAgain: () => game.start(game.levelIndex),
+  onNext: () => game.start(game.levelIndex + 1),
+  onLevels: () => showLevels(),
 });
+
+/** Leaves any level in progress and opens the level selection. */
+function showLevels() {
+  if (game.state !== STATES.MENU) game.quit();
+  levelSelect.render(topic.levels, id => game.levelProgress.get(id));
+  screens.show("levels");
+}
 
 function showRecords(highlightIndex = -1) {
   records.render(game.records.list(), highlightIndex);
@@ -114,7 +114,7 @@ function showRecords(highlightIndex = -1) {
 
 /* ---------- game events -> views and audio ---------- */
 const SCREEN_FOR_STATE = {
-  [STATES.MENU]: "menu", [STATES.STAGE_INTRO]: "stage-intro", [STATES.QUIZ]: "quiz",
+  [STATES.MENU]: "menu", [STATES.LEVEL_INTRO]: "level-intro", [STATES.QUIZ]: "quiz",
   [STATES.PAUSED]: "pause", [STATES.OVER]: "results",
 };
 
@@ -126,12 +126,10 @@ game.on("state", state => {
 });
 game.on("hud", snapshot => hud.update(snapshot));
 game.on("progress", ratio => hud.setProgress(ratio));
-game.on("stageIntro", info => stageIntro.show(info, preferences.character.id === topic.heroId));
+game.on("levelIntro", info => levelIntro.show(info, preferences.character.id === topic.heroId));
 game.on("quiz:open", info => quiz.show(info));
 game.on("quiz:answered", result => quiz.showResult(result));
-game.on("gameOver", summary => results.show(summary, {
-  character: preferences.character, finish: topic.finish, lastName: game.records.lastName(),
-}));
+game.on("gameOver", summary => results.show(summary, { character: preferences.character, lastName: game.records.lastName() }));
 game.on("sound", name => sfx.play(name));
 game.on("music", ({ action, track, tempo }) => (action === "start" ? music.start(track, tempo) : music.stop()));
 
@@ -161,7 +159,6 @@ window.addEventListener("blur", () => game.pause());
 
 /* ---------- start ---------- */
 setMuted(preferences.muted);
-setDifficulty(preferences.difficulty);
 setCharacter(preferences.character.id);
 fitStageToWindow(stage);
 screens.show("menu");

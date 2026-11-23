@@ -1,9 +1,8 @@
 // Draws a frame of the game. Reads game state; never changes it.
 import { VIEW, WORLD, PLAYER } from "../data/config.js";
-import { TEXTS } from "../data/texts.js";
 import { STATES } from "../game/states.js";
 import { drawSky, drawDecorations, drawGround } from "./scenery.js";
-import { drawSpike, drawBlock, drawPortal, drawGoal, drawHeart, drawPlayer } from "./sprites.js";
+import { drawSpike, drawBlock, drawPad, drawPortal, drawGoal, drawHeart, drawPlayer } from "./sprites.js";
 import { drawCollectible } from "./collectibles.js";
 import { drawTrail, drawParticles, drawPopups, drawConfetti } from "./effectsRenderer.js";
 
@@ -30,7 +29,7 @@ export class Renderer {
 
   render(game) {
     const ctx = this.ctx;
-    const scenery = this.sceneries[game.stage.scenery];
+    const scenery = this.sceneries[game.level.scenery];
     ctx.save();
     if (game.shake > 0) ctx.translate((Math.random() * 2 - 1) * game.shake, (Math.random() * 2 - 1) * game.shake);
 
@@ -49,17 +48,15 @@ export class Renderer {
     drawConfetti(this.overlay, game.effects.confetti);
   }
 
-  /** Only the topic's own hero changes color between stages. */
+  /** Only the topic's own hero changes color between levels. */
   #tint(game) {
-    return this.character.id === game.topic.heroId ? game.stage.heroTint ?? undefined : undefined;
+    return this.character.id === game.topic.heroId ? game.level.heroTint ?? undefined : undefined;
   }
 
   #drawWorld(game, scenery) {
     const { ctx } = this;
-    const { camera, time, stage } = game;
-    const next = game.nextStage;
-    const finish = game.topic.finish;
-    const goalLabel = next ? { label: TEXTS.goalNext, icon: next.emoji } : { label: finish.label, icon: finish.icon };
+    const { camera, time, level } = game;
+    const goalLabel = { label: level.finish.label, icon: level.finish.icon };
 
     for (const item of game.world.items) {
       const x = item.x - camera;
@@ -70,7 +67,8 @@ export class Renderer {
         case "block": drawBlock(ctx, scenery, item, x); break;
         case "portal": drawPortal(ctx, item, x, time); break;
         case "goal": drawGoal(ctx, item, x, time, goalLabel); break;
-        case "collectible": if (!item.done) drawCollectible(ctx, stage.collectible, item, x, time); break;
+        case "pad": drawPad(ctx, item, x, time); break;
+        case "collectible": if (!item.done) drawCollectible(ctx, level.collectible, item, x, time); break;
         case "heart": if (!item.done) drawHeart(ctx, item, x, time); break;
       }
     }

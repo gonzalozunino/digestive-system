@@ -26,6 +26,14 @@
   --answer-3: #ff5d8f; --answer-3-shadow: #a8325a;
   --answer-4: #b6f05a; --answer-4-shadow: #6e9a2a;
 
+  /* Difficulty colors, easiest to hardest */
+  --diff-facil: #46c8ff;
+  --diff-normal: #3ddc84;
+  --diff-dificil: #ffc93c;
+  --diff-muy-dificil: #ff8a3d;
+  --diff-extremo: #ff4d5e;
+  --diff-demonio: #b05cff;
+
   --font-display: "Baloo 2", "Trebuchet MS", "Comic Sans MS", system-ui, sans-serif;
   --radius: 0.8em;
   color-scheme: dark;

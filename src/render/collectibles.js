@@ -1,4 +1,4 @@
-// Collectible looks. A stage picks one with collectible.style; colors cycle through collectible.colors.
+// Collectible looks. A level picks one with collectible.style; colors cycle through collectible.colors.
 import { VISUALS } from "../data/visuals.js";
 import { roundRectPath } from "./canvasUtils.js";
 

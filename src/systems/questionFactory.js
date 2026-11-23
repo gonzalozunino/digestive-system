@@ -59,11 +59,11 @@ function nextInSequence(concept, ctx, rng) {
   };
 }
 
-/** Questions about the concepts that belong to a stage. */
-export function conceptQuestions(topic, stageId, rng = Math.random) {
+/** Questions about the concepts that belong to a level. */
+export function conceptQuestions(topic, levelId, rng = Math.random) {
   if (topic.concepts.length < 4) return [];
   const ctx = context(topic);
-  return topic.concepts.filter(c => c.stage === stageId).flatMap(concept => {
+  return topic.concepts.filter(c => c.level === levelId).flatMap(concept => {
     const wrong = wrongConceptsFor(concept, topic.concepts, rng);
     if (wrong.length < 3) return [nextInSequence(concept, ctx, rng)].filter(Boolean);
     return [roleOf(concept, wrong, ctx), conceptFor(concept, wrong, ctx), nextInSequence(concept, ctx, rng)].filter(Boolean);

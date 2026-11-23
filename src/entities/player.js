@@ -42,6 +42,12 @@ export function jump(player) {
   player.grounded = false;
 }
 
+/** Thrown upwards by a jump pad. */
+export function launch(player) {
+  player.vy = -PHYSICS.padVelocity;
+  player.grounded = false;
+}
+
 /** Falls slowly off screen after losing the last heart. */
 export function fallAfterDefeat(player, dt) {
   player.vy += PHYSICS.gravity * dt;

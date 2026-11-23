@@ -3,8 +3,8 @@
 // Topics follow the school syllabus: función del sistema digestivo; ingestión y digestión;
 // órganos, glándulas y partes con su función; recorrido del alimento.
 
-/** Questions specific to each stage (organ), keyed by stage id. */
-export const STAGE_QUESTIONS = {
+/** Questions specific to each level (organ), keyed by level id. */
+export const LEVEL_QUESTIONS = {
   boca: [
     {prompt: "¿Dónde comienza la digestión?", answers: ["En la boca","En el estómago","En el intestino delgado","En el esófago"], explanation: "En la boca los dientes trituran la comida y la saliva empieza a digerirla."},
     {group: "salivales", prompt: "¿Qué líquido se produce en la boca y ablanda la comida?", answers: ["La saliva","La bilis","El jugo gástrico","La sangre"], explanation: "Las glándulas salivales fabrican saliva: ¡más de un litro al día!"},
@@ -15,13 +15,18 @@ export const STAGE_QUESTIONS = {
     {prompt: "¿Cuántos dientes tiene normalmente una persona adulta?", answers: ["32","20","12","50"], explanation: "Los adultos tienen 32 dientes. Los niños tienen 20 dientes de leche."},
     {prompt: "La saliva empieza a digerir un tipo de alimento. ¿Cuál?", answers: ["Los almidones, como el pan o el arroz","Las grasas","Las vitaminas","El agua"], explanation: "La saliva tiene una enzima llamada amilasa que empieza a romper los almidones."},
   ],
+  faringe: [
+    {group: "cruce", prompt: "Por la faringe no solo pasa la comida. ¿Qué más pasa por ahí?", answers: ["El aire que respiramos","La sangre","La orina","La bilis"], explanation: "La faringe es un cruce: por ahí pasan la comida hacia el esófago y el aire hacia la tráquea."},
+    {group: "atragantar", prompt: "¿Por qué no conviene hablar o reírse mientras tragamos?", answers: ["La comida puede irse por el camino del aire","La comida se enfría","Se nos caen los dientes","Se digiere más rápido"], explanation: "Si hablamos al tragar, la epiglotis no alcanza a tapar la tráquea y nos podemos atragantar."},
+    {group: "deglucion", prompt: "¿Cómo se llama el acto de tragar la comida?", answers: ["Deglución","Masticación","Absorción","Egestión"], explanation: "Tragar se llama deglución: la lengua empuja el bolo hacia la faringe."},
+    {group: "epiglotis", prompt: "¿Qué \"tapita\" evita que la comida se vaya a los pulmones al tragar?", answers: ["La epiglotis","La úvula","Las amígdalas","El diafragma"], explanation: "La epiglotis tapa la tráquea cuando tragamos. Si falla, ¡tosemos!"},
+    {group: "faringe", prompt: "Al tragar, ¿por dónde pasa la comida justo antes del esófago?", answers: ["Por la faringe","Por el estómago","Por el hígado","Por el páncreas"], explanation: "La faringe (la garganta) es un cruce compartido entre la comida y el aire."},
+  ],
   esofago: [
     {group: "esofago", prompt: "¿Qué tubo lleva la comida de la boca al estómago?", answers: ["El esófago","La tráquea","El intestino grueso","La vena"], explanation: "El esófago es un tubo muscular. La tráquea lleva el aire a los pulmones."},
     {group: "esofago", prompt: "¿Cómo se llaman los movimientos que empujan la comida por el esófago?", answers: ["Movimientos peristálticos","Latidos","Respiración","Masticación"], explanation: "Son contracciones en forma de ola que empujan el bolo hacia abajo."},
-    {group: "epiglotis", prompt: "¿Qué \"tapita\" evita que la comida se vaya a los pulmones al tragar?", answers: ["La epiglotis","La úvula","Las amígdalas","El diafragma"], explanation: "La epiglotis tapa la tráquea cuando tragamos. Si falla, ¡tosemos!"},
     {prompt: "¿Podrías tragar comida estando de cabeza?", answers: ["Sí, los músculos del esófago la empujan","No, la gravedad lo impide","Solo los líquidos","Solo si masticas mucho"], explanation: "¡Sí! Por eso los astronautas pueden comer en el espacio sin gravedad."},
     {prompt: "¿Cuánto mide más o menos el esófago de un adulto?", answers: ["Unos 25 cm","Unos 2 cm","Unos 2 metros","Unos 10 metros"], explanation: "Mide unos 25 centímetros, más o menos lo que una regla escolar larga."},
-    {group: "faringe", prompt: "Al tragar, ¿por dónde pasa la comida justo antes del esófago?", answers: ["Por la faringe","Por el estómago","Por el hígado","Por el páncreas"], explanation: "La faringe (la garganta) es un cruce compartido entre la comida y el aire."},
     {prompt: "¿Cuánto tarda la comida en bajar por el esófago?", answers: ["Unos pocos segundos","Una hora","Un día","Una semana"], explanation: "Solo tarda unos 5 a 10 segundos en llegar al estómago."},
     {prompt: "¿Qué hay al final del esófago para que la comida no vuelva a subir?", answers: ["Un anillo de músculo (cardias)","Un diente","Un hueso","Una vellosidad"], explanation: "El cardias es un anillo muscular que se abre para dejar pasar la comida y luego se cierra."},
   ],

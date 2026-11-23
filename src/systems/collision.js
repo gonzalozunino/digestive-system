@@ -26,11 +26,14 @@ function touchesRound(p, item) {
 
 const reachedCenter = (p, item) => p.x + S / 2 >= item.x + item.w / 2;
 
+/** A pad fires when the player touches it while not already going up. */
+const touchesPad = (p, pad) => p.vy >= 0 && p.x + S > pad.x + 4 && p.x < pad.x + pad.w - 4 && p.y + S >= pad.y;
+
 /**
  * @param player  the player, already moved this step
  * @param items   world items sorted by x
  * @param previousBottom  player's bottom edge before moving (to tell landing from side hits)
- * @returns {{type: "hurt"|"collect"|"heart"|"portal"|"goal", item?: object}[]}
+ * @returns {{type: "hurt"|"collect"|"heart"|"pad"|"portal"|"goal", item?: object}[]}
  */
 export function detectCollisions(player, items, previousBottom) {
   const events = [];
@@ -46,6 +49,9 @@ export function detectCollisions(player, items, previousBottom) {
         break;
       case "spike":
         if (touchesSpike(player, item)) events.push({ type: "hurt", item });
+        break;
+      case "pad":
+        if (touchesPad(player, item)) events.push({ type: "pad", item });
         break;
       case "collectible":
       case "heart":

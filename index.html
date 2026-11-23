@@ -15,11 +15,12 @@
     <!-- HUD -->
     <header id="hud" class="hud" hidden>
       <span id="hud-hearts" class="hud__pill"></span>
-      <span id="hud-stage" class="hud__pill hud__pill--stage"></span>
+      <span id="hud-level" class="hud__pill hud__pill--level"></span>
       <div id="hud-progress" class="hud__progress" aria-hidden="true">
         <div class="hud__progress-fill"></div>
         <div class="hud__progress-dot"></div>
       </div>
+      <span id="hud-percent" class="hud__pill hud__pill--percent"></span>
       <span id="hud-score" class="hud__pill hud__pill--score"></span>
       <button id="hud-pause" class="hud__button" aria-label="Pausa">⏸</button>
       <button id="hud-mute" class="hud__button" aria-label="Sonido">🔊</button>
@@ -40,14 +41,6 @@
             <div id="menu-characters" class="character-picker" role="group" aria-label="Personaje"></div>
           </div>
           <div class="row">
-            <span class="label">Dificultad:</span>
-            <div class="segmented" role="group" aria-label="Dificultad">
-              <button data-difficulty="easy" aria-pressed="true">Fácil</button>
-              <button data-difficulty="normal" aria-pressed="false">Normal</button>
-              <button data-difficulty="hard" aria-pressed="false">Difícil</button>
-            </div>
-          </div>
-          <div class="row">
             <button id="menu-play" class="btn btn--primary">▶ Jugar</button>
             <button id="menu-records" class="btn btn--secondary">🏆 Récords</button>
             <button id="menu-help" class="btn btn--secondary">❓ Cómo jugar</button>
@@ -58,27 +51,39 @@
 
     <!-- HELP -->
     <section id="help" class="screen" hidden>
-      <div class="card card--narrow stack">
+      <div class="card card--narrow stack help-card">
         <h2>Cómo jugar</h2>
-        <p>🦘 <b>Saltar:</b> toca la pantalla, haz clic o pulsa <kbd>Espacio</kbd> / <kbd>↑</kbd>. Mantén pulsado para saltar seguido.</p>
-        <p>🦷 <b>Esquiva</b> los pinchos y cajas. Si chocas pierdes un corazón ❤️.</p>
-        <p>✨ <span id="help-collect"></span> Los ❤️ corazones te devuelven una vida.</p>
-        <p>❓ <b>Portales:</b> responde la pregunta (puedes usar las teclas <kbd>1</kbd>–<kbd>4</kbd>). Si aciertas ganas muchos puntos y las rachas dan bonus. Si fallas, pierdes un corazón.</p>
-        <p>🚪 <span id="help-stages"></span></p>
-        <p>🎚️ <b>Dificultad:</b> Fácil (5 vidas), Normal (3 vidas) o Difícil (2 vidas, más rápido y con obstáculos más difíciles).</p>
+        <p>🦘 <b>Saltar:</b> toca la pantalla, haz clic o pulsa <kbd>Espacio</kbd> / <kbd>↑</kbd> (mantén pulsado para saltar seguido). Si chocas pierdes un ❤️.</p>
+        <p>🟡 Los <b>pads amarillos</b> te lanzan muy alto. ⬛ En los <b>techos bajos</b> no saltes: chocarías.</p>
+        <p>✨ <span id="help-collect"></span> Los ❤️ te devuelven una vida.</p>
+        <p>❓ <b>Portales:</b> responde con clic o con <kbd>1</kbd>–<kbd>4</kbd>. Aciertos y rachas dan puntos; si fallas, pierdes un ❤️.</p>
+        <p>🗺️ <b>Niveles:</b> cada uno es una parte del tema, con sus propias preguntas. Juégalos en el orden que quieras.</p>
+        <p>🎚️ <span id="help-difficulties"></span></p>
         <div class="row"><button class="btn btn--primary" data-back>¡Entendido!</button></div>
       </div>
     </section>
 
-    <!-- STAGE INTRO -->
-    <section id="stage-intro" class="screen" hidden>
-      <div class="card stage-card">
-        <span id="intro-step" class="chip"></span>
-        <div id="intro-emoji" class="stage-card__emoji"></div>
+    <!-- LEVEL SELECT -->
+    <section id="levels" class="screen" hidden>
+      <div class="card levels-card">
+        <div class="levels-card__top">
+          <h2>Elige un nivel</h2>
+          <button class="btn btn--secondary" data-back>Volver</button>
+        </div>
+        <div id="levels-list" class="levels"></div>
+      </div>
+    </section>
+
+    <!-- LEVEL INTRO -->
+    <section id="level-intro" class="screen" hidden>
+      <div class="card level-card">
+        <span id="intro-difficulty" class="chip"></span>
+        <div id="intro-emoji" class="level-card__emoji"></div>
         <h2 id="intro-name"></h2>
-        <p id="intro-text" class="stage-card__text"></p>
+        <p id="intro-text" class="level-card__text"></p>
         <p id="intro-hero-note" class="muted"></p>
-        <p id="intro-collect" class="stage-card__collect"></p>
+        <p id="intro-collect" class="level-card__collect"></p>
+        <p id="intro-stats" class="muted"></p>
         <button id="intro-start" class="btn btn--primary">¡Vamos! 🚀</button>
       </div>
     </section>
@@ -121,6 +126,7 @@
         <div class="stack stack--tight">
           <h2 id="results-title"></h2>
           <p id="results-text"></p>
+          <p id="results-best" class="results-card__best"></p>
           <p id="results-score" class="results-card__score"></p>
           <form id="results-form" class="row" autocomplete="off">
             <label for="results-name" class="label">Tu nombre:</label>
@@ -128,8 +134,9 @@
             <button type="submit" class="btn btn--primary btn--small">Guardar</button>
           </form>
           <div class="row">
-            <button id="results-again" class="btn btn--primary">🔁 Otra vez</button>
-            <button id="results-menu" class="btn btn--secondary">Menú</button>
+            <button id="results-next" class="btn btn--primary">Siguiente nivel ▶</button>
+            <button id="results-again" class="btn btn--secondary">🔁 Otra vez</button>
+            <button id="results-levels" class="btn btn--secondary">Niveles</button>
           </div>
         </div>
       </div>
@@ -141,7 +148,7 @@
         <h2>🏆 Récords</h2>
         <div class="records__scroll">
           <table class="records">
-            <thead><tr><th>#</th><th>Nombre</th><th>Llegó a</th><th class="records__number">Puntos</th></tr></thead>
+            <thead><tr><th>#</th><th>Nombre</th><th>Nivel</th><th class="records__number">Puntos</th></tr></thead>
             <tbody id="records-body"></tbody>
           </table>
         </div>

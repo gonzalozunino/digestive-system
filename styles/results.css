@@ -1,5 +1,6 @@
 /* End-of-game card and the records table. */
 .results-card { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 1.2em; }
+.results-card__best { font-weight: 800; color: var(--lime); }
 .results-card__score { font-size: 1.6em; font-weight: 800; color: var(--sun); }
 
 .records__scroll { max-height: 15em; overflow: auto; }

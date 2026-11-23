@@ -1,16 +1,18 @@
 // High-score table of the current topic.
 import { byId } from "./dom.js";
 import { MEDALS, TEXTS } from "../data/texts.js";
+import { format } from "../utils/text.js";
 
 export class RecordsView {
-  /** @param stages the topic's stages, to show how far each player got */
-  constructor(stages) {
+  /** @param levels the topic's levels, to name the level of each record */
+  constructor(levels) {
     this.body = byId("records-body");
-    this.stages = stages;
+    this.levels = new Map(levels.map(level => [level.id, level]));
   }
 
-  #reachedLabel(record) {
-    return this.stages[record.reachedStage]?.shortName ?? TEXTS.recordsFinished;
+  #levelLabel(record) {
+    const level = this.levels.get(record.levelId);
+    return level ? format(TEXTS.recordLevel, { level: level.shortName, percent: record.percent }) : "—";
   }
 
   render(records, highlightIndex = -1) {
@@ -27,7 +29,7 @@ export class RecordsView {
     this.body.replaceChildren(...records.map((record, i) => {
       const row = document.createElement("tr");
       if (i === highlightIndex) row.className = "records__row--mine";
-      [MEDALS[i] ?? String(i + 1), record.name, this.#reachedLabel(record), String(record.score)].forEach((value, column) => {
+      [MEDALS[i] ?? String(i + 1), record.name, this.#levelLabel(record), String(record.score)].forEach((value, column) => {
         const cell = document.createElement("td");
         cell.textContent = value;
         if (column === 3) cell.className = "records__number";

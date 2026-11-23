@@ -1,6 +1,6 @@
 # Trivia Runner: project rules
 
-A Spanish trivia + runner game for primary-school kids. The engine works with any topic; each build ships one topic from `topics/`. Plain HTML/CSS/JS (ES modules), no framework.
+A Spanish trivia + runner game for primary-school kids, in the style of Geometry Dash. The engine works with any topic; each build ships one topic from `topics/`. A topic is split into independent, selectable levels; each level has its own difficulty (facil → demonio) and asks about its own part of the topic. Plain HTML/CSS/JS (ES modules), no framework.
 
 ## Architecture rules (always follow)
 
@@ -18,20 +18,20 @@ Markup defines structure. Styles define appearance. Logic defines behavior. Data
 
 | Folder | Responsibility |
 |---|---|
-| `topics/<id>/index.js` | A topic: stages, questions, optional concepts/sequence/categories, wording, hero, sceneries, finish texts |
+| `topics/<id>/index.js` | A topic: levels (each with difficulty, questions, optional `general`, scenery, collectible, finish), general questions, optional concepts/sequence/categories, wording, hero, sceneries |
 | `src/activeTopic.js` | Which topic this build uses (overridable with `--topic=<id>`) |
 | `src/topic/` | `validateTopic` (Spanish error messages for topic authors), `prepareTopic` (defaults), `defaults.js` |
 | `index.html` | Markup: stage, HUD and overlay screens |
 | `styles/` | Tokens, base, and one stylesheet per screen; `main.css` imports them |
-| `src/data/` | Engine config: physics, difficulty, layout, scoring, obstacle patterns/pools, texts, sounds, music, visuals, controls |
+| `src/data/` | Engine config: physics, difficulties (`DIFFICULTY`), layout, scoring, obstacle patterns and per-difficulty pools, texts, sounds, music, visuals, controls |
 | `src/characters/` | Generic playable characters and the shared face helper; interface documented in `index.js` |
 | `src/entities/` | Player state and movement |
-| `src/systems/` | Stage building, collisions, effects state, question factory/picker/history, records |
+| `src/systems/` | Level building, collisions (incl. jump pads), effects state, question factory/picker/history, level progress, records |
 | `src/game/` | `Game` state machine and rules; `states.js` |
 | `src/render/` | Canvas drawing: generic sceneries (interface in `scenery.js`), sprites, collectibles, effects, `Renderer` |
-| `src/ui/` | DOM views, one per screen, plus screen manager and stage scaling |
+| `src/ui/` | DOM views, one per screen (menu, level select, level intro, quiz, pause, results, records), plus screen manager and stage scaling |
 | `src/audio/`, `src/input/`, `src/core/`, `src/utils/` | Audio engine, input → actions, game loop, helpers |
-| `tests/` | `node --test` suites; every topic in `topics/` is validated automatically; `fixtures/miniTopic.js` proves the engine works with a bare topic |
+| `tests/` | `node --test` suites; every topic in `topics/` is validated automatically; `fixtures/miniTopic.js` proves the engine works with a bare topic; `solver.js` + `patterns.test.js` prove every pair of patterns is passable at each difficulty's speed |
 | `scripts/` | Dev server and single-file build (`--topic=<id>`) |
 
 ## Commands
@@ -43,6 +43,7 @@ Markup defines structure. Styles define appearance. Logic defines behavior. Data
 
 ## Content conventions
 
+- Obstacle patterns: after adding or changing one, `npm test` must still show every pattern pair passable (tests/patterns.test.js). Leave landing room after anything tall.
 - Questions: the correct answer is always **first** in `answers`; they are shuffled at play time. Use `group` when two questions cover the same idea so they don't appear in the same game.
 - Concept names carry their Spanish article ("el hígado", "la Tierra"); generated questions rely on it.
 - All player-facing text is in Spanish. The sistema digestivo topic follows the school syllabus: función del sistema digestivo; ingestión y digestión; órganos, glándulas y partes con su función; recorrido del alimento.

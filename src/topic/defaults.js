@@ -9,10 +9,10 @@ export const DEFAULT_COLLECTIBLE = {
   hint: "Junta ⭐ estrellas para sumar puntos.",
 };
 
-/** Name shown in the "+10 …" label when a stage does not name its collectible. */
+/** Name shown in the "+10 …" label when a level does not name its collectible. */
 export const COLLECTIBLE_NAMES = { star: "estrella", gem: "gema", drop: "gota", microbe: "microbio" };
 
-export const DEFAULT_STAGE_EMOJI = "⭐";
+export const DEFAULT_LEVEL_EMOJI = "⭐";
 
 /**
  * Wording of generated questions. Placeholders: {name} (with article, e.g. "el hígado"),
@@ -33,9 +33,10 @@ export const DEFAULT_QUESTION_WORDING = {
   outsideExplanation: "{Name} no forma parte del recorrido.",
 };
 
+/** End of a level: goal sign and victory texts ({level}, {correct}, {asked}). A topic or a level can override them. */
 export const DEFAULT_FINISH = {
   label: "META",
   icon: "🏁",
-  winTitle: "¡Lo lograste! 🏆",
-  winText: "Completaste todas las paradas. Respondiste bien {correct} de {asked} preguntas.",
+  winTitle: "¡Nivel completado! 🎉",
+  winText: "Completaste {level}. Respondiste bien {correct} de {asked} preguntas.",
 };

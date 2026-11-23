@@ -21,8 +21,9 @@ export const SOUNDS = {
     { kind: "tone", freq: 330, duration: 0.22, wave: "sawtooth", volume: 0.2, slideTo: 220 },
     { kind: "tone", freq: 220, duration: 0.35, wave: "sawtooth", volume: 0.2, slideTo: 110, delay: 0.2 },
   ],
+  pad: [{ kind: "tone", freq: 300, duration: 0.18, wave: "square", volume: 0.14, slideTo: 1100 }],
   portal: [{ kind: "tone", freq: 400, duration: 0.4, wave: "sine", volume: 0.25, slideTo: 1200 }],
-  stageComplete: arpeggio([392, 523, 659, 784, 659, 784, 1047], { step: 0.1, duration: 0.18, wave: "square", volume: 0.12 }),
+  levelComplete: arpeggio([392, 523, 659, 784, 659, 784, 1047], { step: 0.1, duration: 0.18, wave: "square", volume: 0.12 }),
   gameOver: arpeggio([392, 330, 262, 196], { step: 0.22, duration: 0.3, wave: "triangle", volume: 0.25 }),
   click: [{ kind: "tone", freq: 660, duration: 0.05, wave: "square", volume: 0.08 }],
 };

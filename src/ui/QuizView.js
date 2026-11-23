@@ -24,8 +24,8 @@ export class QuizView {
   /** The character that reacts to the answers. */
   setCharacter(character) { this.character = character; }
 
-  show({ question, number, total, stage, streak }) {
-    this.counter.textContent = format(TEXTS.quizCounter, { number, total, emoji: stage.emoji, stage: stage.shortName });
+  show({ question, number, total, level, streak }) {
+    this.counter.textContent = format(TEXTS.quizCounter, { number, total, emoji: level.emoji, level: level.shortName });
     this.streak.textContent = streak >= 2 ? format(TEXTS.streak, { streak }) : "";
     this.prompt.textContent = question.prompt;
     this.#setMascot("think", MASCOT_LINES.ask);

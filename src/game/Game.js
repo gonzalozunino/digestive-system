@@ -1,24 +1,25 @@
-// Game rules and flow: sessions, stages, scoring, hearts, quiz and the state machine.
-// Works with any topic (see src/topic). It has no DOM, canvas or audio code and tells the outside
-// world what happened through events:
+// Game rules and flow for playing one level: scoring, hearts, quiz, progress and the state machine.
+// Works with any topic (see src/topic). Each level has its own difficulty (data/config.js DIFFICULTY).
+// It has no DOM, canvas or audio code and tells the outside world what happened through events:
 //   "state"          new state name
-//   "hud"            { hearts, maxHearts, score, stage }
-//   "progress"       0..1 along the current stage
-//   "stageIntro"     { stage, number, total }
-//   "quiz:open"      { question, number, total, stage, streak }
+//   "hud"            { hearts, maxHearts, score, level }
+//   "progress"       0..1 along the current level
+//   "levelIntro"     { level, best }                    best: { best: 0..100, completed }
+//   "quiz:open"      { question, number, total, level, streak }
 //   "quiz:answered"  { chosenIndex, correctIndex, correct, points, streak, explanation, correctText, outOfHearts }
-//   "gameOver"       { won, score, correct, asked, stage, stageNumber }
+//   "gameOver"       { won, score, correct, asked, level, percent, isNewBest, nextLevel }
 //   "sound"          sound name (see data/sounds.js)
 //   "music"          { action: "start", track, tempo } | { action: "stop" }
 import { Emitter } from "../utils/emitter.js";
-import { DIFFICULTY, DEFAULT_DIFFICULTY, PHYSICS, PLAYER, SCORING, SPEED, TIMING, WORLD } from "../data/config.js";
+import { DIFFICULTY, PHYSICS, PLAYER, SCORING, SPEED, TIMING, WORLD } from "../data/config.js";
 import { VISUALS } from "../data/visuals.js";
-import { createPlayer, resetPlayer, movePlayer, jump, animatePlayer, fallAfterDefeat, playerBottom, playerCenter } from "../entities/player.js";
-import { buildStage } from "../systems/stageBuilder.js";
+import { createPlayer, resetPlayer, movePlayer, jump, launch, animatePlayer, fallAfterDefeat, playerBottom, playerCenter } from "../entities/player.js";
+import { buildLevel } from "../systems/levelBuilder.js";
 import { detectCollisions } from "../systems/collision.js";
-import { pickQuestions, prepareQuestion, questionsPerGame } from "../systems/questionPicker.js";
+import { pickLevelQuestions, prepareQuestion } from "../systems/questionPicker.js";
 import { createQuestionHistory } from "../systems/questionHistory.js";
 import { createRecords } from "../systems/records.js";
+import { createLevelProgress } from "../systems/levelProgress.js";
 import { Effects } from "../systems/effects.js";
 import { STATES } from "./states.js";
 
@@ -30,7 +31,7 @@ export class Game extends Emitter {
     this.rng = rng;
     this.history = createQuestionHistory(storage, topic.id);
     this.records = createRecords(storage, topic.id);
-    this.difficultyKey = DEFAULT_DIFFICULTY;
+    this.levelProgress = createLevelProgress(storage, topic.id);
     this.state = STATES.MENU;
     this.time = 0;
     this.camera = 0;
@@ -46,34 +47,44 @@ export class Game extends Emitter {
 
   /* ---------- read-only views ---------- */
 
-  get difficulty() { return DIFFICULTY[this.difficultyKey]; }
-  get stages() { return this.topic.stages; }
-  get stageIndex() { return this.session ? Math.min(this.session.stage, this.stages.length - 1) : 0; }
-  get stage() { return this.stages[this.stageIndex]; }
-  get nextStage() { return this.stages[this.stageIndex + 1] ?? null; }
+  get levels() { return this.topic.levels; }
+  get levelIndex() { return this.session?.levelIndex ?? 0; }
+  get level() { return this.levels[this.levelIndex]; }
+  get nextLevel() { return this.levels[this.levelIndex + 1] ?? null; }
+  get difficulty() { return DIFFICULTY[this.level.difficulty]; }
   get progress() { return Math.max(0, Math.min(1, this.player.x / this.world.length)); }
+  get quizAnswered() { return this.state === STATES.QUIZ && this.quiz.answered; }
 
   /* ---------- commands ---------- */
 
-  setDifficulty(key) {
-    if (DIFFICULTY[key]) this.difficultyKey = key;
-  }
-
-  start() {
-    const { questionsByStage, seen } = pickQuestions({ topic: this.topic, seen: this.history.load(), rng: this.rng });
+  /** Starts (or restarts) a level by its position in the topic. */
+  start(levelIndex = this.levelIndex) {
+    const level = this.levels[levelIndex];
+    if (!level) return;
+    const difficulty = DIFFICULTY[level.difficulty];
+    const { questions, seen } = pickLevelQuestions({
+      topic: this.topic, level, count: difficulty.questions, seen: this.history.load(), rng: this.rng,
+    });
     this.history.save(seen);
-    const hearts = this.difficulty.hearts;
     this.session = {
-      stage: 0, score: 0, hearts, maxHearts: hearts, streak: 0, correct: 0, asked: 0,
-      questions: questionsByStage, questionIndex: 0, won: false,
+      levelIndex, score: 0, hearts: difficulty.hearts, maxHearts: difficulty.hearts,
+      streak: 0, correct: 0, asked: 0, questions, won: false, percent: 0,
     };
     this.timers = [];
-    this.#introduceStage();
+
+    const { items, length } = buildLevel(level.difficulty, difficulty, this.rng);
+    this.world = { items, length, speed: SPEED.base * difficulty.speedFactor };
+    resetPlayer(this.player);
+    this.camera = 0;
+    this.effects.clear();
+    this.#setState(STATES.LEVEL_INTRO);
+    this.emit("levelIntro", { level, best: this.levelProgress.get(level.id) });
+    this.#emitHud();
+    this.emit("progress", 0);
   }
 
   beginRun() {
-    if (this.state !== STATES.STAGE_INTRO) return;
-    this.#resumePlaying();
+    if (this.state === STATES.LEVEL_INTRO) this.#resumePlaying();
   }
 
   pause() {
@@ -141,12 +152,10 @@ export class Game extends Emitter {
     return true;
   }
 
-  get quizAnswered() { return this.state === STATES.QUIZ && this.quiz.answered; }
-
   /** @returns {number} position in the table, or -1 */
   saveRecord(name) {
     const s = this.session;
-    return this.records.add({ name, score: s.score, reachedStage: s.won ? this.stages.length : s.stage });
+    return this.records.add({ name, score: s.score, levelId: this.level.id, percent: s.percent });
   }
 
   /* ---------- simulation ---------- */
@@ -159,7 +168,7 @@ export class Game extends Emitter {
 
     switch (this.state) {
       case STATES.MENU:
-      case STATES.STAGE_INTRO:
+      case STATES.LEVEL_INTRO:
         this.camera += WORLD.menuScrollSpeed * dt;
         break;
       case STATES.DEFEATED:
@@ -205,10 +214,11 @@ export class Game extends Emitter {
   #handleCollision({ type, item }) {
     switch (type) {
       case "hurt": return this.#hurt();
+      case "pad": return this.#bounce(item);
       case "collect": return this.#collect(item);
       case "heart": return this.#collectHeart(item);
       case "portal": return this.#openQuiz(item);
-      case "goal": return this.#completeStage(item);
+      case "goal": return this.#completeLevel(item);
     }
   }
 
@@ -229,9 +239,15 @@ export class Game extends Emitter {
     }
   }
 
+  #bounce(pad) {
+    launch(this.player);
+    this.effects.burst(pad.x + pad.w / 2, pad.y, VISUALS.pad.glow, 12);
+    this.emit("sound", "pad");
+  }
+
   #collect(item) {
     item.done = true;
-    const kind = this.stage.collectible;
+    const kind = this.level.collectible;
     const color = kind.colors[item.variant % kind.colors.length];
     const name = kind.names[item.variant % kind.names.length];
     this.session.score += SCORING.collectible;
@@ -254,7 +270,7 @@ export class Game extends Emitter {
   #openQuiz(portal) {
     portal.done = true;
     const s = this.session;
-    const question = s.questions[s.stage][s.questionIndex++];
+    const question = s.questions[s.asked];
     this.history.markAsked(question);
     s.asked++;
     this.quiz = { question: prepareQuestion(question, this.rng), answered: false };
@@ -263,57 +279,42 @@ export class Game extends Emitter {
     this.emit("sound", "portal");
     this.#setState(STATES.QUIZ);
     this.emit("quiz:open", {
-      question: this.quiz.question, number: s.asked, total: questionsPerGame(this.topic), stage: this.stage, streak: s.streak,
+      question: this.quiz.question, number: s.asked, total: s.questions.length, level: this.level, streak: s.streak,
     });
   }
 
-  #completeStage(goal) {
+  #completeLevel(goal) {
     goal.done = true;
     const s = this.session;
     this.#stopMusic();
-    this.emit("sound", "stageComplete");
+    this.emit("sound", "levelComplete");
     this.effects.celebrate(120);
-    s.score += SCORING.stageComplete;
+    s.score += SCORING.levelComplete;
+    s.won = true;
     this.#emitHud();
-    s.stage++;
     this.#setState(STATES.TRANSITION);
-    if (s.stage >= this.stages.length) {
-      s.won = true;
-      this.#after(TIMING.victoryDelay, () => this.#endGame(true));
-    } else {
-      this.#after(TIMING.nextStageDelay, () => this.#introduceStage());
-    }
-  }
-
-  #introduceStage() {
-    const s = this.session;
-    const { items, length } = buildStage(s.stage, this.difficulty, this.rng);
-    const speedStep = Math.min(s.stage, SPEED.maxStageSteps);
-    this.world = { items, length, speed: (SPEED.base + speedStep * SPEED.perStage) * this.difficulty.speedFactor };
-    resetPlayer(this.player);
-    s.questionIndex = 0;
-    this.camera = 0;
-    this.effects.clear();
-    this.#setState(STATES.STAGE_INTRO);
-    this.emit("stageIntro", { stage: this.stage, number: s.stage + 1, total: this.stages.length });
-    this.#emitHud();
-    this.emit("progress", 0);
+    this.#after(TIMING.victoryDelay, () => this.#endGame(true));
   }
 
   #endGame(won) {
     const s = this.session;
+    s.percent = won ? 100 : Math.min(99, Math.floor(this.progress * 100));
+    const { isNewBest } = this.levelProgress.record(this.level.id, s.percent);
     this.#stopMusic();
     this.#setState(STATES.OVER);
     if (won) this.effects.celebrate(250);
     else this.emit("sound", "gameOver");
-    this.emit("gameOver", { won, score: s.score, correct: s.correct, asked: s.asked, stage: this.stage, stageNumber: this.stageIndex + 1 });
+    this.emit("gameOver", {
+      won, score: s.score, correct: s.correct, asked: s.asked, level: this.level,
+      percent: s.percent, isNewBest, nextLevel: this.nextLevel,
+    });
   }
 
   #resumePlaying() {
     this.releaseJump();
     this.jumpInput.buffer = 0;
     this.#setState(STATES.PLAYING);
-    this.emit("music", { action: "start", track: this.stage.music, tempo: this.difficulty.musicTempo });
+    this.emit("music", { action: "start", track: this.level.music, tempo: this.difficulty.musicTempo });
   }
 
   #stopMusic() { this.emit("music", { action: "stop" }); }
@@ -325,7 +326,7 @@ export class Game extends Emitter {
 
   #emitHud() {
     const s = this.session;
-    this.emit("hud", { hearts: s.hearts, maxHearts: s.maxHearts, score: s.score, stage: this.stage });
+    this.emit("hud", { hearts: s.hearts, maxHearts: s.maxHearts, score: s.score, level: this.level });
   }
 
   #after(seconds, action) { this.timers.push({ remaining: seconds, action }); }

@@ -1,33 +1,30 @@
-// Main menu (title, topic, character and difficulty pickers) and the help screen.
+// Main menu (title, topic, character picker) and the help screen.
 import { byId } from "./dom.js";
+import { difficultyLabel } from "./labels.js";
 import { GAME_NAME, TEXTS } from "../data/texts.js";
+import { DIFFICULTY_ORDER } from "../data/config.js";
 import { format } from "../utils/text.js";
 
 export class MenuView {
   /**
    * @param {{topic: object, characters: object[]}} content  topic from prepareTopic()
-   * @param {{onPlay, onRecords, onHelp, onBack, onDifficulty, onCharacter}} handlers
+   * @param {{onPlay, onRecords, onHelp, onBack, onCharacter}} handlers
    */
-  constructor({ topic, characters }, { onPlay, onRecords, onHelp, onBack, onDifficulty, onCharacter }) {
+  constructor({ topic, characters }, { onPlay, onRecords, onHelp, onBack, onCharacter }) {
     this.topic = topic;
     this.mascot = byId("menu-mascot");
     this.lead = byId("menu-lead");
     byId("menu-title").textContent = GAME_NAME;
     byId("menu-subject").textContent = topic.subject;
     byId("help-collect").textContent = topic.collectHelp;
-    byId("help-stages").textContent = format(TEXTS.helpStages, {
-      count: topic.stages.length,
-      list: topic.stages.map(s => s.shortName.toLowerCase()).join(", "),
+    byId("help-difficulties").textContent = format(TEXTS.helpDifficulties, {
+      list: DIFFICULTY_ORDER.map(difficultyLabel).join(", "),
     });
 
     byId("menu-play").addEventListener("click", onPlay);
     byId("menu-records").addEventListener("click", onRecords);
     byId("menu-help").addEventListener("click", onHelp);
     document.querySelectorAll("[data-back]").forEach(button => button.addEventListener("click", onBack));
-
-    this.difficultyButtons = [...document.querySelectorAll("[data-difficulty]")];
-    this.difficultyButtons.forEach(button =>
-      button.addEventListener("click", () => onDifficulty(button.dataset.difficulty)));
 
     this.characterButtons = characters.map(character => {
       const button = document.createElement("button");
@@ -41,10 +38,6 @@ export class MenuView {
       return button;
     });
     byId("menu-characters").replaceChildren(...this.characterButtons);
-  }
-
-  setDifficulty(key) {
-    this.difficultyButtons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.difficulty === key)));
   }
 
   setCharacter(character) {

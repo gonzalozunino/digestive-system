@@ -5,7 +5,7 @@
 //   color               main color, used by the UI
 //   portrait(mood)      SVG markup; mood is "happy" | "think" | "sad" | "wow"
 //   draw(ctx, options)  canvas drawing centered at (0,0); options: { radius, grounded, time, tint }
-//                       (`tint` is only passed to a topic's own hero, from stage.heroTint)
+//                       (`tint` is only passed to a topic's own hero, from level.heroTint)
 import { robot } from "./robot.js";
 import { cat } from "./cat.js";
 import { ufo } from "./ufo.js";

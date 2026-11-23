@@ -1,5 +1,5 @@
 // Drawing of world objects and the player. Positions are screen coordinates.
-// Spikes and blocks take their look from the stage scenery (see scenery.js).
+// Spikes and blocks take their look from the level scenery (see scenery.js).
 import { WORLD, PLAYER } from "../data/config.js";
 import { VISUALS } from "../data/visuals.js";
 import { roundRectPath } from "./canvasUtils.js";
@@ -31,7 +31,20 @@ export function drawSpike(ctx, scenery, x, y) {
   ctx.beginPath(); ctx.moveTo(x + T / 2, y + 8); ctx.lineTo(x + T / 2 - 5, y + T - 6); ctx.lineTo(x + T / 2, y + T - 6); ctx.closePath(); ctx.fill();
 }
 
+/** Floating blocks (low ceilings) hurt from below: small spikes on their underside show it. */
+function drawUndersideSpikes(ctx, scenery, block, x) {
+  const bottom = block.y + block.h;
+  ctx.fillStyle = scenery.colors.spike;
+  ctx.strokeStyle = scenery.colors.spikeEdge;
+  ctx.lineWidth = 2;
+  for (let sx = x + 4; sx + 12 <= x + block.w - 4; sx += 14) {
+    ctx.beginPath(); ctx.moveTo(sx, bottom - 2); ctx.lineTo(sx + 6, bottom + 10); ctx.lineTo(sx + 12, bottom - 2); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+  }
+}
+
 export function drawBlock(ctx, scenery, block, x) {
+  if (block.y + block.h < WORLD.groundY - 1) drawUndersideSpikes(ctx, scenery, block, x);
   ctx.fillStyle = scenery.colors.block;
   ctx.strokeStyle = scenery.colors.blockEdge;
   ctx.lineWidth = 3;
@@ -74,6 +87,23 @@ export function drawGoal(ctx, goal, x, time, { label, icon }) {
   ctx.fillStyle = ring; ctx.textAlign = "center";
   ctx.font = `800 22px ${VISUALS.fontFamily}`; ctx.fillText(label, x + goal.w / 2, goal.y - 34);
   ctx.font = "34px sans-serif"; ctx.fillText(icon, x + goal.w / 2, goal.y - 2);
+  ctx.restore();
+}
+
+/** A jump pad: a glowing spring plate on the ground. */
+export function drawPad(ctx, pad, x, time) {
+  const { fill, edge, glow } = VISUALS.pad;
+  ctx.save();
+  ctx.shadowColor = glow; ctx.shadowBlur = 14 + Math.sin(time * 8) * 6;
+  ctx.fillStyle = fill; ctx.strokeStyle = edge; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(x + pad.w / 2, pad.y + pad.h, pad.w / 2, pad.h, 0, Math.PI, 0); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.shadowBlur = 0; ctx.globalAlpha = 0.5 + 0.5 * Math.sin(time * 8);
+  ctx.strokeStyle = glow; ctx.lineWidth = 2;
+  for (let k = 0; k < 2; k++) {
+    const y = pad.y - 8 - k * 8;
+    ctx.beginPath(); ctx.moveTo(x + pad.w / 2 - 7, y + 5); ctx.lineTo(x + pad.w / 2, y); ctx.lineTo(x + pad.w / 2 + 7, y + 5); ctx.stroke();
+  }
   ctx.restore();
 }
 

@@ -33,6 +33,7 @@ kbd {
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.7em; }
 .stack { display: grid; gap: 0.8em; }
 .stack--tight { gap: 0.6em; }
+.help-card { gap: 0.55em; font-size: 0.95em; }
 .stack--centered { justify-items: center; text-align: center; }
 
 button { font-family: inherit; color: inherit; border: 0; cursor: pointer; }
